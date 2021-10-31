@@ -1,112 +1,88 @@
 'use strict';
 
+import { ChromeTabs } from './chrome-api/chrome-tabs';
+import { ChromeRuntime } from './chrome-api/chrome-runtime';
 import './popup.css';
+import { BACKGROUND_API } from './background';
 
-(function() {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
-
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: cb => {
-      chrome.storage.sync.get(['count'], result => {
-        cb(result.count);
-      });
-    },
-    set: (value, cb) => {
-      chrome.storage.sync.set(
-        {
-          count: value,
-        },
-        () => {
-          cb();
-        }
-      );
-    },
-  };
-
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter').innerHTML = initialValue;
-
-    document.getElementById('incrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
-      });
-    });
-
-    document.getElementById('decrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
-    });
+class Popup {
+  async init() {
+    this.chromeRuntime = new ChromeRuntime()
+    this.chromeTabs = new ChromeTabs()
+    this.appDOM = document.getElementById('app')
+    this.clipContentsButtonDOM = document.getElementById('clipContentsBtn')
+    this.bindButtonDOM = document.getElementById('bindBtn')
+    this.currentBinderDOM = document.getElementById('current-binder')
+    this.bindersDOM = document.getElementById('binders')
+    this.bind()
   }
 
-  function updateCounter({ type }) {
-    counterStorage.get(count => {
-      let newCount;
+  bind() {
+    const self = this
+    this.clipContentsButtonDOM.addEventListener('click', function(e) {
+      self.onClipContentsButtonClicked()
+    })
 
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
-      } else {
-        newCount = count;
-      }
-
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter').innerHTML = newCount;
-
-        // Communicate with content script of
-        // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id,
-            {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            response => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
-        });
-      });
-    });
+    this.bindButtonDOM.addEventListener('click', function(e) {
+      self.onBindButtonClicked()
+    })
   }
 
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get(count => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
-      }
-    });
-  }
+  async onClipContentsButtonClicked() {
+    console.log('onClipContentsButtonClicked')
+    const tabs = await this.chromeTabs.query({
+      active: true,
+      currentWindow: true,
+      highlighted: true
+    })
 
-  document.addEventListener('DOMContentLoaded', restoreCounter);
-
-  // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Pop. I am from Popup.',
-      },
-    },
-    response => {
-      console.log(response.message);
+    if (!tabs.length) {
+      throw new Error('An active tab on the current window is not found')
     }
-  );
-})();
+
+    const activeCurrentTab = tabs[0]
+    console.log(activeCurrentTab);
+    try {
+      const response = await this.chromeRuntime.sendMessage(
+        {
+          type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_CONTENTS}`,
+          payload: {
+            url: activeCurrentTab.url,
+          }
+        }
+      )
+      console.log('response', response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
+  onBindButtonClicked() {
+    console.log('onBindButtonClicked')
+  }
+
+  onClearBinderButtonClicked() {
+
+  }
+
+  onBinderFocusChanged() {
+
+  }
+
+  onClearFocusButtonClicked() {
+
+  }
+
+  onBinderDeleted() {
+
+  }
+}
+
+(function(){
+  function initEnvironment() {
+    const popup = new Popup()
+    document.addEventListener('DOMContentLoaded', popup.init())
+  }
+  
+  initEnvironment();
+})()

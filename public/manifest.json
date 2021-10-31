@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Chrome Extension-cli",
+  "name": "Binder",
   "version": "0.1.0",
-  "description": "My Chrome Extension",
+  "description": "Bind web contents then turn it into easily readable format",
   "icons": {
     "16": "icons/icon_16.png",
     "32": "icons/icon_32.png",
@@ -16,11 +16,12 @@
     "persistent": false
   },
   "browser_action": {
-    "default_title": "Chrome Extension-cli",
+    "default_title": "Binder",
     "default_popup": "popup.html"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
   "content_scripts": [
     {
