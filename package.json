@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "axios": "^0.24.0",
-    "epub-maker": "^1.2.0"
+    "epub-maker": "^1.2.0",
+    "jspdf": "^2.4.0"
   }
 }
