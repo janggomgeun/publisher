@@ -1,7 +1,7 @@
 'use strict';
 
-import { ChromeTabs } from './chrome-api/chrome-tabs';
-import { ChromeRuntime } from './chrome-api/chrome-runtime';
+import { ChromeTabs } from './libs/chrome-api/chrome-tabs';
+import { ChromeRuntime } from './libs/chrome-api/chrome-runtime';
 import './popup.css';
 import { BACKGROUND_API } from './background';
 

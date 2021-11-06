@@ -1,8 +1,8 @@
 'use strict';
 
 import * as cheerio from 'cheerio';
-import { ChromeRuntime } from './chrome-api/chrome-runtime';
-import { ChromeStorage } from './chrome-api/chrome-storage';
+import { ChromeRuntime } from './libs/chrome-api/chrome-runtime';
+import { ChromeStorage } from './libs/chrome-api/chrome-storage';
 
 export const BACKGROUND_API = {
   namespace: 'background',
