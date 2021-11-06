@@ -1,5 +1,5 @@
 export class Publisher {
   publish(publishable) {
-    publishable.publish()
+    publishable.publish();
   }
 }
