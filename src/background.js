@@ -7,7 +7,7 @@ import {
   ChromeDownloads,
 } from "./libs/chrome-api";
 import { Publisher } from "./libs/publisher/publisher";
-import { EpubAdapter } from "./libs/publisher/publishers/epub-adapter";
+import { EpubAdapter } from "./libs/publisher/adapters/epub-adapter";
 
 export const BACKGROUND_API = {
   namespace: "background",
