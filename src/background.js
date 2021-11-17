@@ -36,8 +36,8 @@ class Background {
     this.contentsTree = {};
     this.runtime = new ChromeRuntime();
     this.downloads = new ChromeDownloads();
-    this.defaultPublisher = new Publisher(new EpubAdapter());
-    this.tempPublishment = undefined;
+    this.publisher = new Publisher(new EpubAdapter());
+    this.publication = undefined;
   }
 
   init() {
@@ -82,17 +82,17 @@ class Background {
       ) {
         console.log("starts publishing");
         try {
-          this.tempPublishment = await this.defaultPublisher.publish();
+          this.publication = await this.publisher.publish();
         } catch (error) {
           console.log("error", error);
         }
-        console.log("this.tempPublishment", this.tempPublishment);
+        console.log("this.tempPublishment", this.publication);
       }
 
       if (
         type === `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`
       ) {
-        var url = URL.createObjectURL(this.tempPublishment);
+        var url = URL.createObjectURL(this.publication);
         const result = await this.downloads.download({
           url,
           saveAs: true,
