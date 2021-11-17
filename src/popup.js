@@ -12,6 +12,7 @@ class Popup {
     this.appDOM = document.getElementById("app");
     this.clipContentsButtonDOM = document.getElementById("clipContentsBtn");
     this.bindButtonDOM = document.getElementById("bindBtn");
+    this.downloadButtonDOM = document.getElementById("downloadBtn");
     this.currentBinderDOM = document.getElementById("current-binder");
     this.bindersDOM = document.getElementById("binders");
     this.bind();
@@ -25,6 +26,10 @@ class Popup {
 
     this.bindButtonDOM.addEventListener("click", function (e) {
       self.onBindButtonClicked();
+    });
+
+    this.downloadButtonDOM.addEventListener("click", function (e) {
+      self.onDownloadButtonClicked();
     });
   }
 
@@ -55,7 +60,57 @@ class Popup {
     }
   }
 
-  onBindButtonClicked() {
+  async onBindButtonClicked() {
+    const tabs = await this.chromeTabs.query({
+      active: true,
+      currentWindow: true,
+      highlighted: true,
+    });
+
+    if (!tabs.length) {
+      throw new Error("An active tab on the current window is not found");
+    }
+
+    const activeCurrentTab = tabs[0];
+    console.log(activeCurrentTab);
+    try {
+      const response = await this.chromeRuntime.sendMessage({
+        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`,
+        payload: {
+          url: activeCurrentTab.url,
+        },
+      });
+      console.log("response", response);
+    } catch (error) {
+      console.log(error);
+    }
+    console.log("onBindButtonClicked");
+  }
+
+  async onDownloadButtonClicked() {
+    const tabs = await this.chromeTabs.query({
+      active: true,
+      currentWindow: true,
+      highlighted: true,
+    });
+
+    if (!tabs.length) {
+      throw new Error("An active tab on the current window is not found");
+    }
+
+    const activeCurrentTab = tabs[0];
+    console.log(activeCurrentTab);
+    try {
+      const response = await this.chromeRuntime.sendMessage({
+        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`,
+        payload: {
+          url: activeCurrentTab.url,
+        },
+      });
+      console.log("response", response);
+    } catch (error) {
+      console.log(error);
+    }
     console.log("onBindButtonClicked");
   }
 

@@ -21,7 +21,8 @@
   },
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "downloads"
   ],
   "content_scripts": [
     {

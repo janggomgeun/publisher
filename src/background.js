@@ -1,8 +1,13 @@
 "use strict";
 
 import * as cheerio from "cheerio";
-import { ChromeRuntime } from "./libs/chrome-api/chrome-runtime";
-import { ChromeStorage } from "./libs/chrome-api/chrome-storage";
+import {
+  ChromeRuntime,
+  ChromeStorage,
+  ChromeDownloads,
+} from "./libs/chrome-api";
+import { Publisher } from "./libs/publisher/publisher";
+import { EpubAdapter } from "./libs/publisher/publishers/epub-adapter";
 
 export const BACKGROUND_API = {
   namespace: "background",
@@ -30,6 +35,9 @@ class Background {
     this.storage = storage;
     this.contentsTree = {};
     this.runtime = new ChromeRuntime();
+    this.downloads = new ChromeDownloads();
+    this.defaultPublisher = new Publisher(new EpubAdapter());
+    this.tempPublishment = undefined;
   }
 
   init() {
@@ -70,15 +78,26 @@ class Background {
       }
 
       if (
-        type ===
-        `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH_CONTENTS}`
+        type === `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`
       ) {
+        console.log("starts publishing");
+        try {
+          this.tempPublishment = await this.defaultPublisher.publish();
+        } catch (error) {
+          console.log("error", error);
+        }
+        console.log("this.tempPublishment", this.tempPublishment);
       }
 
       if (
         type === `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`
       ) {
-        // TODO
+        var url = URL.createObjectURL(this.tempPublishment);
+        const result = await this.downloads.download({
+          url,
+          saveAs: true,
+        });
+        console.log("result", result);
       }
     });
   }
