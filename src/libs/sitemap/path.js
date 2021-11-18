@@ -1,24 +1,19 @@
 import { Contents } from "../contents/contents";
 
 export class Path {
-  constructor(fullUrl) {
+  constructor(fullUrl, name) {
     this.fullUrl = fullUrl;
-    // this.contents = {
-    //   document: undefined,
-    //   resources: {
-    //     images: [],
-    //     audios: [],
-    //     videos: [],
-    //     svgs: [],
-    //     canvas: [],
-    //   },
-    //   references: [],
-    // };
+    this.name = name;
     this.selected = false;
+    this.map = {};
   }
 
   async loadRawHtmlFromFullUrl(fullUrl) {
-    this.rawHtml = rawHtml;
+    const response = await fetch(this.fullUrl, {
+      method: "GET",
+    });
+    const html = await response.text();
+    this.rawHtml = html;
   }
 
   async loadContents() {

@@ -9,7 +9,9 @@ export class Sitemap extends Path {
   }
 
   addPath(fullUrl) {
-    const path = Path.fromFullUrl(fullUrl);
+    const name = "";
+    const path = Path.fromFullUrl(fullUrl, name);
+    this.map[path.name] = path;
   }
 
   static fromHostUrl(url) {}

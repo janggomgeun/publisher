@@ -8,6 +8,7 @@ import {
 } from "./libs/chrome-api";
 import { Publisher } from "./libs/publisher/publisher";
 import { EpubAdapter } from "./libs/publisher/adapters/epub-adapter";
+import { Sitemap } from "./libs/sitemap/sitemap";
 
 export const BACKGROUND_API = {
   namespace: "background",
@@ -27,13 +28,18 @@ export const BACKGROUND_API = {
 };
 
 export const BACKGROUND_API_COMMAND_MAP = {
-  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_CONTENTS}`]: "",
+  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_CONTENTS}`]:
+    BACKGROUND_API.apis.CLIP_CONTENTS,
+  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`]:
+    BACKGROUND_API.apis.PUBLISH,
+  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`]:
+    BACKGROUND_API.apis.DOWNLOAD,
 };
 
 class Background {
   constructor(storage) {
     this.storage = storage;
-    this.contentsTree = {};
+    this.sites = {};
     this.runtime = new ChromeRuntime();
     this.downloads = new ChromeDownloads();
     this.publisher = new Publisher(new EpubAdapter());
@@ -41,64 +47,50 @@ class Background {
   }
 
   init() {
+    const sitesKey = "sites";
+    const sites = this.storage.get(sitesKey);
+    if (sites) {
+      Object.entries(sites).forEach(([host, sitemapJson]) => {
+        this.sites[host] = Sitemap.fromJson(sitemapJson);
+      });
+    }
+
     this.runtime.addListener(async (type, payload, sender, sendResponse) => {
-      if (
-        type ===
-        `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_CONTENTS}`
-      ) {
-        const url = new URL(payload.url);
-        const host = url.host;
-        const protocol = url.protocol;
-        const response = await fetch(url.toString(), {
-          method: "GET",
-        });
-
-        const htmlContents = await response.text();
-        const $ = cheerio.load(htmlContents);
-
-        const articleEls = $("article").toArray();
-        /**
-         * 1. 필요한 엘레멘트를 뽑아 낸다.
-         * 2. 엘레멘트 안에서 video, image, code, audio, canvas를 뽑아내서 적절히 처리한다.
-         * 3. 캐시한다.
-         * 4. 도메인이 변경되면, 모든 캐시를 삭제한다.
-         */
-
-        const content = [];
-        articleEls.forEach((el) => {
-          content.push({
-            title: "hmm",
-            author: "wilson",
-            data: $(el).html(),
-          });
-        });
-
-        sendResponse({});
-        return true;
+      if (!(type in BACKGROUND_API_COMMAND_MAP)) {
+        throw new Error("The command does not exist");
       }
 
-      if (
-        type === `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`
-      ) {
-        console.log("starts publishing");
-        try {
-          this.publication = await this.publisher.publish();
-        } catch (error) {
-          console.log("error", error);
-        }
-        console.log("this.tempPublishment", this.publication);
-      }
+      await this.BACKGROUND_API_COMMAND_MAP[type](payload);
+      sendResponse({});
+      return;
+    });
+  }
 
-      if (
-        type === `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`
-      ) {
-        var url = URL.createObjectURL(this.publication);
-        const result = await this.downloads.download({
-          url,
-          saveAs: true,
-        });
-        console.log("result", result);
-      }
+  async clipContents(payload) {
+    const url = new URL(payload.url);
+    const host = url.host;
+    const protocol = url.protocol;
+    this.sites[host].addPath(payload.url);
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+    });
+
+    const htmlContents = await response.text();
+    const $ = cheerio.load(htmlContents);
+
+    const articleEls = $("article").toArray();
+  }
+
+  async publish() {
+    this.publication = await this.publisher.publish();
+  }
+
+  async download() {
+    var url = URL.createObjectURL(this.publication);
+    await this.downloads.download({
+      url,
+      saveAs: true,
     });
   }
 }

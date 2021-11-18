@@ -1,17 +1,41 @@
+"use strict";
+
+import * as cheerio from "cheerio";
+
 export class Contents {
   constructor() {
     this.document = undefined;
-    this.resources = {};
-    this.references = {};
+    this.$ = undefined;
+    this.resources = {
+      images: [],
+      audios: [],
+      videos: [],
+      svgs: [],
+      canvases: [],
+    };
+    this.references = [];
     this.loading = undefined;
   }
 
-  extractDocumentFromRawHtml(rawHtml) {}
+  extractDocumentFromRawHtml(rawHtml) {
+    this.$ = cheerio.load(this.rawHtml);
+    this.$ = this.$("body");
+  }
 
-  clearStyleFromDocument(document) {}
+  clearStyleFromDocument(document) {
+    this.$("*").each(function () {
+      this.removeAttr("class");
+      this.removeAttr("style");
+    });
+  }
 
-  async extractResourcesFromDocument(document) {}
-  async extractReferencesFromDocument(document) {}
+  async extractResourcesFromDocument(document) {
+    const resourceTags = ["img", "svg", "audio", "video", "canvas"];
+  }
+
+  async extractReferencesFromDocument(document) {
+    const referenceTags = ["a"];
+  }
 
   async loadResources() {
     const loadingResources = [];
@@ -35,17 +59,10 @@ export class Contents {
   }
 
   static fromHtml(html) {
-    const document = this.extractDocumentFromRawHtml(html);
-    this.document = document;
-
-    const styleClearedDocument = this.clearStyleFromDocument(document);
-
-    const resources = this.extractResourcesFromDocument(styleClearedDocument);
-    this.resources = resources;
-
-    const references = this.extractReferencesFromDocument(styleClearedDocument);
-    this.references = references;
-
+    this.extractDocumentFromRawHtml(html);
+    this.clearStyleFromDocument(document);
+    this.extractResourcesFromDocument(styleClearedDocument);
+    this.extractReferencesFromDocument(styleClearedDocument);
     this.loading = loadResources();
   }
 }
