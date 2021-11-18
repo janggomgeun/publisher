@@ -1,3 +1,5 @@
+"use strict";
+
 import { Path } from "./path";
 
 export class Sitemap extends Path {

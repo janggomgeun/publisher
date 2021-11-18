@@ -1,3 +1,5 @@
+"use strict";
+
 import { Contents } from "../contents/contents";
 
 export class Path {

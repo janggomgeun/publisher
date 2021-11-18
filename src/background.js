@@ -1,14 +1,9 @@
 "use strict";
 
-import * as cheerio from "cheerio";
-import {
-  ChromeRuntime,
-  ChromeStorage,
-  ChromeDownloads,
-} from "./libs/chrome-api";
+import { ChromeRuntime, ChromeDownloads } from "./libs/chrome-api";
 import { Publisher } from "./libs/publisher/publisher";
 import { EpubAdapter } from "./libs/publisher/adapters/epub-adapter";
-import { Sitemap } from "./libs/sitemap/sitemap";
+import { Sitemap, Sites } from "./libs/sitemap";
 
 export const BACKGROUND_API = {
   namespace: "background",
@@ -38,8 +33,7 @@ export const BACKGROUND_API_COMMAND_MAP = {
 
 class Background {
   constructor(storage) {
-    this.storage = storage;
-    this.sites = {};
+    this.sites = new Sites();
     this.runtime = new ChromeRuntime();
     this.downloads = new ChromeDownloads();
     this.publisher = new Publisher(new EpubAdapter());
@@ -70,16 +64,9 @@ class Background {
     const url = new URL(payload.url);
     const host = url.host;
     const protocol = url.protocol;
-    this.sites[host].addPath(payload.url);
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-    });
-
-    const htmlContents = await response.text();
-    const $ = cheerio.load(htmlContents);
-
-    const articleEls = $("article").toArray();
+    this.sites.addSitemap(host);
+    const sitemap = this.sites.getSitemap(host);
+    sitemap.addPath(payload.url);
   }
 
   async publish() {
@@ -96,6 +83,6 @@ class Background {
 }
 
 (function () {
-  const background = new Background(new ChromeStorage());
+  const background = new Background();
   background.init();
 })();
