@@ -31,6 +31,9 @@ export class Contents {
 
   async extractResourcesFromDocument(document) {
     const resourceTags = ["img", "svg", "audio", "video", "canvas"];
+    resourceTags.forEach((tag) => {
+      this.$(tag).each((_) => {});
+    });
   }
 
   async extractReferencesFromDocument(document) {

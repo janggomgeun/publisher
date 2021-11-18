@@ -1,8 +1,9 @@
 export class Reference {
-  constructor() {
-    this.id = undefined;
-    this.type = undefined;
-    this.mimetype = undefined;
-    this.source = undefined;
+  constructor(id, type, source) {
+    this.id = id;
+    this.type = type;
+    this.source = source;
   }
+
+  static create() {}
 }
