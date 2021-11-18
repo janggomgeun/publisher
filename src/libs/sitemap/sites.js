@@ -6,7 +6,7 @@ const SITES_KEY = "sites";
 export class Sites {
   constructor() {
     this.storage = new ChromeStorage();
-    await this.restore();
+    this.restore();
   }
 
   async save() {

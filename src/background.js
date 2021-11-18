@@ -2,7 +2,7 @@
 
 import { ChromeRuntime, ChromeDownloads } from "./libs/chrome-api";
 import { Publisher } from "./libs/publisher/publisher";
-import { EpubAdapter } from "./libs/publisher/adapters/epub-adapter";
+import { EpubAdapter } from "./libs/publisher/adapters/epub/epub-adapter";
 import { Sitemap, Sites } from "./libs/sitemap";
 
 export const BACKGROUND_API = {
