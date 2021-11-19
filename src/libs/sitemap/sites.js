@@ -3,6 +3,7 @@
 import { ChromeStorage } from "../chrome-api";
 
 const SITES_KEY = "sites";
+
 export class Sites {
   constructor() {
     this.storage = new ChromeStorage();
