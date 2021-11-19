@@ -49,7 +49,7 @@ export class Sites {
     }
 
     const sitemap = this.hostSitemap[url.host];
-    sitemap.addPath(url.pathname);
+    sitemap.addPath(fullUrl);
 
     const page = new Page(fullUrl);
     await page.loadContents();
