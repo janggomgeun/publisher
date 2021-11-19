@@ -47,34 +47,60 @@ class Background {
         throw new Error("The command does not exist");
       }
 
-      await this.BACKGROUND_API_COMMAND_MAP[type](payload);
-      sendResponse({});
-      return;
+      try {
+        await this.BACKGROUND_API_COMMAND_MAP[type](payload);
+        sendResponse({});
+      } catch (error) {
+        sendResponse({
+          error,
+        });
+      }
     });
+
+    // TODO background is initialized
+    this.runtime.sendMessage({});
   }
 
   async clipContents(payload) {
-    return this.sites.addPage(payload.url);
+    if (!("url" in payload)) {
+      throw new Error("No URL is given");
+    }
+
+    await this.sites.addPage(payload.url);
+    this.runtime.sendMessage({
+      // type: `${}`
+      payload: {
+        sites: {
+          ...this.sites,
+        },
+      },
+    });
   }
 
   async publish() {
-    this.publisher.addCover("unknown");
-    this.publisher.addAuthor("unknown");
-    this.publisher.addPublisher("unknown");
-
     const selectedPages = this.sites.getSelectedPages();
+    if (!selectedPages.length) {
+      throw new Error("There are no selected pages.");
+    }
+
     for (const page of selectedPages) {
       await page.contents.loading;
       const contents = page.contents;
       const chapter = new Chapter(contents.title, contents);
       this.publisher.addChapter(chapter);
     }
-
+    this.publisher.addCover("unknown");
+    this.publisher.addAuthor("unknown");
+    this.publisher.addPublisher("unknown");
     this.publication = await this.publisher.publish();
     this.publisher.throwDraftOut();
   }
 
   async download() {
+    if (this.publication === undefined) {
+      throw new Error("It is not published yet.");
+    }
+
     var url = URL.createObjectURL(this.publication);
     await this.downloads.download({
       url,
