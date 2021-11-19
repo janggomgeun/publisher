@@ -9,12 +9,13 @@ const SITES_KEY = "sites";
 export class Sites {
   constructor() {
     this.storage = new ChromeStorage();
+    this.hostSitemap = undefined;
     this.restore();
     this.urlPageMap = {};
   }
 
   async save() {
-    return this.storage.set(SITES_KEY, JSON.parse(this.map));
+    return this.storage.set(SITES_KEY, JSON.parse(this.hostSitemap));
   }
 
   async restore() {
@@ -22,10 +23,10 @@ export class Sites {
     const sitesAsJson = JSON.parse(sitesAsJsonString);
     if (sitesAsJson) {
       Object.entries(sitesAsJson).forEach(([host, sitemapJson]) => {
-        this.map[host] = Sitemap.fromJson(sitemapJson);
+        this.hostSitemap[host] = Sitemap.fromJson(sitemapJson);
       });
     } else {
-      this.map = {};
+      this.hostSitemap = {};
     }
   }
 
@@ -35,7 +36,7 @@ export class Sites {
       this.addSitemap(url.host);
     }
 
-    const sitemap = this.map[url.host];
+    const sitemap = this.hostSitemap[url.host];
     sitemap.addPath(url.pathname);
 
     const page = new Page(fullUrl);
@@ -58,10 +59,10 @@ export class Sites {
   }
 
   hasSitemap(host) {
-    return host in this.map;
+    return host in this.hostSitemap;
   }
 
   addSitemap(host) {
-    this.map[host] = Sitemap.fromHostUrl(host);
+    this.hostSitemap[host] = Sitemap.fromHostUrl(host);
   }
 }

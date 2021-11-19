@@ -58,7 +58,13 @@ class Background {
     });
 
     // TODO background is initialized
-    this.runtime.sendMessage({});
+    this.runtime.sendMessage({
+      payload: {
+        sites: {
+          ...this.sites,
+        },
+      },
+    });
   }
 
   async clipContents(payload) {
