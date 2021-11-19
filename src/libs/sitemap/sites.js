@@ -4,29 +4,41 @@ import { ChromeStorage } from "../chrome-api";
 import { Sitemap } from "./sitemap";
 import { Page } from "./page";
 
-const SITES_KEY = "sites";
+const HOST_SITE_MAP_KEY = "host_site_map";
+const URL_PAGE_MAP_KEY = "url_page_map";
 
 export class Sites {
   constructor() {
     this.storage = new ChromeStorage();
-    this.hostSitemap = undefined;
-    this.restore();
+    this.hostSitemap = {};
     this.urlPageMap = {};
+    this.restore();
   }
 
   async save() {
-    return this.storage.set(SITES_KEY, JSON.parse(this.hostSitemap));
+    await this.storage.set(HOST_SITE_MAP_KEY, JSON.parse(this.hostSitemap));
+    await this.storage.set(URL_PAGE_MAP_KEY, JSON.parse(this.urlPageMap));
   }
 
   async restore() {
-    const sitesAsJsonString = await this.storage.get(SITES_KEY);
-    const sitesAsJson = JSON.parse(sitesAsJsonString);
-    if (sitesAsJson) {
-      Object.entries(sitesAsJson).forEach(([host, sitemapJson]) => {
-        this.hostSitemap[host] = Sitemap.fromJson(sitemapJson);
-      });
-    } else {
-      this.hostSitemap = {};
+    const hostSiteMapAsJsonString = await this.storage.get(HOST_SITE_MAP_KEY);
+    if (hostSiteMapAsJsonString) {
+      const hostSiteMap = JSON.parse(hostSiteMapAsJsonString);
+      if (hostSiteMap) {
+        Object.entries(hostSiteMap).forEach(([host, hostSiteMapJson]) => {
+          this.hostSitemap[host] = Sitemap.fromJson(hostSiteMapJson);
+        });
+      }
+    }
+
+    const urlPageMapAsJsonString = await this.storage.get(URL_PAGE_MAP_KEY);
+    if (urlPageMapAsJsonString) {
+      const urlPageMap = JSON.parse(urlPageMapAsJsonString);
+      if (urlPageMap) {
+        Object.entries(urlPageMap).forEach(([url, page]) => {
+          this.urlPageMap[url] = page;
+        });
+      }
     }
   }
 
