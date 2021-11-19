@@ -1,3 +1,5 @@
+"use strict";
+
 export class Publisher {
   constructor(publishable) {
     this.publishable = publishable;
