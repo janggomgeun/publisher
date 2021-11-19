@@ -41,14 +41,6 @@ class Background {
   }
 
   init() {
-    const sitesKey = "sites";
-    const sites = this.storage.get(sitesKey);
-    if (sites) {
-      Object.entries(sites).forEach(([host, sitemapJson]) => {
-        this.sites[host] = Sitemap.fromJson(sitemapJson);
-      });
-    }
-
     this.runtime.addListener(async (type, payload, sender, sendResponse) => {
       if (!(type in BACKGROUND_API_COMMAND_MAP)) {
         throw new Error("The command does not exist");

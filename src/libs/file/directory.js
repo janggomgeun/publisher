@@ -1,25 +1,17 @@
-import { FileOrDirectory } from "./file-or-directory";
+import { BaseFile } from "./base-file";
 
-export class Directory extends FileOrDirectory {
+export class Directory extends BaseFile {
   constructor(name) {
     super(true);
     this.name = name;
-    this.fileTree = [];
-  }
-
-  addDirectory(directory) {
-    this.fileTree.push(directory);
-  }
-
-  addDirectories(directories) {
-    this.fileTree.push(...directories);
+    this.files = [];
   }
 
   addFile(file) {
-    this.fileTree.push(file);
+    this.files.push(file);
   }
 
   addFiles(files) {
-    this.fileTree.push(...files);
+    this.files.push(...files);
   }
 }

@@ -1,6 +1,6 @@
-import { FileOrDirectory } from "./file-or-directory";
+import { BaseFile } from "./base-file";
 
-export class File extends FileOrDirectory {
+export class File extends BaseFile {
   constructor(name, data) {
     super(false);
     this.name = name;

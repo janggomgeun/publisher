@@ -1,4 +1,4 @@
-export class FileOrDirectory {
+export class BaseFile {
   constructor(isDir) {
     this.isDir = isDir;
   }
