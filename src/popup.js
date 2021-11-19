@@ -10,7 +10,7 @@ class Popup {
     this.chromeRuntime = new ChromeRuntime();
     this.chromeTabs = new ChromeTabs();
     this.appDOM = document.getElementById("app");
-    this.clipContentsButtonDOM = document.getElementById("clipContentsBtn");
+    this.clipPageButtonDOM = document.getElementById("clipPageBtn");
     this.bindButtonDOM = document.getElementById("bindBtn");
     this.downloadButtonDOM = document.getElementById("downloadBtn");
     this.currentBinderDOM = document.getElementById("current-binder");
@@ -20,7 +20,7 @@ class Popup {
 
   bind() {
     const self = this;
-    this.clipContentsButtonDOM.addEventListener("click", function (e) {
+    this.clipPageButtonDOM.addEventListener("click", function (e) {
       self.onClipContentsButtonClicked();
     });
 
@@ -49,7 +49,7 @@ class Popup {
     console.log(activeCurrentTab);
     try {
       const response = await this.chromeRuntime.sendMessage({
-        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_CONTENTS}`,
+        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_PAGE}`,
         payload: {
           url: activeCurrentTab.url,
         },

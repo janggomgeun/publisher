@@ -54,6 +54,9 @@ export class Sites {
     const page = new Page(fullUrl);
     await page.loadContents();
     this.urlPageMap[fullUrl] = page;
+
+    console.log("urlPageMap", this.urlPageMap);
+    console.log("hostSitemap", this.hostSitemap);
   }
 
   getSelectedPages() {

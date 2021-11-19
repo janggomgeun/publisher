@@ -9,8 +9,8 @@ import { Chapter } from "./libs/publisher/chapter";
 export const BACKGROUND_API = {
   namespace: "background",
   apis: {
-    CLIP_CONTENTS: "clipContents",
-    REMOVE_CONTENTS: "removeContents",
+    CLIP_PAGE: "clipPage",
+    REMOVE_PAGE: "removePage",
     PUBLISH: "publish",
     DOWNLOAD: "download",
     SELECT_CLIP: "selectClip",
@@ -20,12 +20,13 @@ export const BACKGROUND_API = {
   },
   events: {
     ON_CONTENTS_CLIPPED: "onContentsClipped",
+    ON_PUBLISHED: "onPublished",
   },
 };
 
 export const BACKGROUND_API_COMMAND_MAP = {
-  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_CONTENTS}`]:
-    BACKGROUND_API.apis.CLIP_CONTENTS,
+  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_PAGE}`]:
+    BACKGROUND_API.apis.CLIP_PAGE,
   [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`]:
     BACKGROUND_API.apis.PUBLISH,
   [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`]:
@@ -67,7 +68,7 @@ class Background {
     });
   }
 
-  async clipContents(payload) {
+  async clipPage(payload) {
     if (!("url" in payload)) {
       throw new Error("No URL is given");
     }
