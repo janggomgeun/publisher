@@ -1,6 +1,7 @@
 "use strict";
 
 import { ChromeStorage } from "../chrome-api";
+import { Sitemap } from "./sitemap";
 
 const SITES_KEY = "sites";
 
@@ -31,6 +32,7 @@ export class Sites {
   }
   addSitemap(host) {}
   getSitemap(host) {}
+  getSelectedPaths() {}
   removeSitemap(host) {}
 }
 

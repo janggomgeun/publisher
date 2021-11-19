@@ -14,15 +14,6 @@ export class Publisher {
     this.draft.cover.image = image;
   }
 
-  addTableOfContents(autoGeneration, tableOfContents) {
-    if (autoGeneration) {
-      this.draft.tableOfContents.autoGeneration = true;
-    } else {
-      this.draft.tableOfContents.autoGeneration = false;
-      this.draft.tableOfContents.data = tableOfContents;
-    }
-  }
-
   addAuthor(author) {
     this.draft.author.name = author;
   }

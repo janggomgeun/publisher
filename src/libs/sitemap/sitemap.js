@@ -7,7 +7,6 @@ export class Sitemap extends Path {
     super(fullUrl);
     this.protocol = protocol;
     this.host = host;
-    this.map = {};
   }
 
   addPath(fullUrl) {

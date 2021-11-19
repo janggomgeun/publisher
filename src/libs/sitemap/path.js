@@ -7,6 +7,8 @@ export class Path {
     this.fullUrl = fullUrl;
     this.name = name;
     this.selected = false;
+    this.rawHtml = undefined;
+    this.contents = undefined;
     this.map = {};
   }
 

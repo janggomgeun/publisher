@@ -63,6 +63,10 @@ class Background {
   }
 
   async publish() {
+    this.publisher.addCover();
+    this.publisher.addAuthor();
+    this.publisher.addPublisher();
+    this.publisher.addChapter();
     this.publication = await this.publisher.publish();
   }
 
