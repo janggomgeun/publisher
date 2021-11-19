@@ -30,7 +30,7 @@ export class Publisher {
     return this.publishable.publish(this.draft);
   }
 
-  async throwDraftOut() {
+  throwDraftOut() {
     this.draft = new Publication();
   }
 }

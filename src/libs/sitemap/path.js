@@ -1,28 +1,11 @@
 "use strict";
 
-import { Contents } from "../contents/contents";
-
 export class Path {
   constructor(fullUrl, name) {
     this.fullUrl = fullUrl;
     this.name = name;
     this.selected = false;
-    this.rawHtml = undefined;
-    this.contents = undefined;
     this.map = {};
-  }
-
-  async loadRawHtmlFromFullUrl(fullUrl) {
-    const response = await fetch(this.fullUrl, {
-      method: "GET",
-    });
-    const html = await response.text();
-    this.rawHtml = html;
-  }
-
-  async loadContents() {
-    this.contents = Contents.fromHtml(this.rawHtml);
-    return;
   }
 
   selectPath() {

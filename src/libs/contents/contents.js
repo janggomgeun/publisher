@@ -6,37 +6,35 @@ export class Contents {
   constructor() {
     this.document = undefined;
     this.$ = undefined;
-    this.resources = {
-      images: [],
-      audios: [],
-      videos: [],
-      svgs: [],
-      canvases: [],
-    };
+    this.resources = [];
     this.references = [];
     this.loading = undefined;
   }
 
   extractDocumentFromRawHtml(rawHtml) {
-    this.$ = cheerio.load(this.rawHtml);
+    this.$ = cheerio.load(rawHtml);
     this.$ = this.$("body");
   }
 
-  clearStyleFromDocument(document) {
+  clearStyleFromDocument() {
     this.$("*").each(function () {
       this.removeAttr("class");
       this.removeAttr("style");
     });
   }
 
-  async extractResourcesFromDocument(document) {
-    const resourceTags = ["img", "svg", "audio", "video", "canvas"];
+  convertIncomptibleElements() {
+    const incompatibleTags = ["canvas", "svg"];
+  }
+
+  extractResourcesFromDocument() {
+    const resourceTags = ["img", "audio", "video"];
     resourceTags.forEach((tag) => {
       this.$(tag).each((_) => {});
     });
   }
 
-  async extractReferencesFromDocument(document) {
+  extractReferencesFromDocument() {
     const referenceTags = ["a"];
   }
 
@@ -63,9 +61,9 @@ export class Contents {
 
   static fromHtml(html) {
     this.extractDocumentFromRawHtml(html);
-    this.clearStyleFromDocument(document);
-    this.extractResourcesFromDocument(styleClearedDocument);
-    this.extractReferencesFromDocument(styleClearedDocument);
+    this.clearStyleFromDocument();
+    this.extractResourcesFromDocument();
+    this.extractReferencesFromDocument();
     this.loading = loadResources();
   }
 }

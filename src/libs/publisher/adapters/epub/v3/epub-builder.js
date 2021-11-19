@@ -22,6 +22,7 @@ export class EpubBuilder {
     contentsDir.addFile("nav.xhtml", nav);
 
     publication.chapters.forEach((chapter) => {
+      chapter.contents.resources;
       contentsDir.addFile(`chapter_${chapter.id}.xhtml`, chapterTemplate);
     });
 

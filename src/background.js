@@ -3,7 +3,8 @@
 import { ChromeRuntime, ChromeDownloads } from "./libs/chrome-api";
 import { Publisher } from "./libs/publisher/publisher";
 import { EpubAdapter } from "./libs/publisher/adapters/epub/v3/epub-adapter";
-import { Sitemap, Sites } from "./libs/sitemap";
+import { Sites } from "./libs/sitemap";
+import { Chapter } from "./libs/publisher/chapter";
 
 export const BACKGROUND_API = {
   namespace: "background",
@@ -53,21 +54,24 @@ class Background {
   }
 
   async clipContents(payload) {
-    const url = new URL(payload.url);
-    const host = url.host;
-    if (!this.sites.hasSitemap(host)) {
-      this.sites.addSitemap(host);
-    }
-    const sitemap = this.sites.getSitemap(host);
-    sitemap.addPath(payload.url);
+    return this.sites.addPage(payload.url);
   }
 
   async publish() {
-    this.publisher.addCover();
-    this.publisher.addAuthor();
-    this.publisher.addPublisher();
-    this.publisher.addChapter();
+    this.publisher.addCover("unknown");
+    this.publisher.addAuthor("unknown");
+    this.publisher.addPublisher("unknown");
+
+    const selectedPages = this.sites.getSelectedPages();
+    for (const page of selectedPages) {
+      await page.contents.loading;
+      const contents = page.contents;
+      const chapter = new Chapter(contents.title, contents);
+      this.publisher.addChapter(chapter);
+    }
+
     this.publication = await this.publisher.publish();
+    this.publisher.throwDraftOut();
   }
 
   async download() {
