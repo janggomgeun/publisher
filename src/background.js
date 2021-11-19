@@ -19,7 +19,7 @@ export const BACKGROUND_API = {
     UNSELECT_ALL_CLIPS: "unselectAllClips",
   },
   events: {
-    ON_CONTENTS_CLIPPED: "onContentsClipped",
+    ON_PAGE_CLIPPED: "onPageClipped",
     ON_PUBLISHED: "onPublished",
   },
 };
@@ -74,8 +74,9 @@ class Background {
     }
 
     await this.sites.addPage(payload.url);
+
     this.runtime.sendMessage({
-      // type: `${}`
+      type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`,
       payload: {
         sites: {
           ...this.sites,
@@ -101,6 +102,15 @@ class Background {
     this.publisher.addPublisher("unknown");
     this.publication = await this.publisher.publish();
     this.publisher.throwDraftOut();
+
+    this.runtime.sendMessage({
+      type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PUBLISHED}`,
+      payload: {
+        sites: {
+          ...this.sites,
+        },
+      },
+    });
   }
 
   async download() {
