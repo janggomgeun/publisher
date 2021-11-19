@@ -1,44 +1,5 @@
 import JSZip from "jszip";
-
-export class FileOrDirectory {
-  constructor(isDir) {
-    this.isDir = isDir;
-  }
-}
-
-export class File extends FileOrDirectory {
-  constructor(name, data) {
-    super(false);
-    this.name = name;
-    this.data = data;
-  }
-}
-
-export class Directory extends FileOrDirectory {
-  constructor(name) {
-    super(true);
-    this.name = name;
-    this.fileTree = [];
-  }
-
-  addDirectory(directory) {
-    this.fileTree.push(directory);
-  }
-
-  addDirectories(directories) {
-    this.fileTree.push(...directories);
-  }
-
-  addFile(file) {
-    this.fileTree.push(file);
-  }
-
-  addFiles(files) {
-    this.fileTree.push(...files);
-  }
-}
-
-// FILE tree
+import { Directory, File } from "../../../../file";
 
 export class EpubBuilder {
   constructor() {
@@ -47,17 +8,6 @@ export class EpubBuilder {
     metainfDir.addFile(new File("container.xhtml"));
     const mimetypeFile = new File("mimetype", "application/epub+zip");
     this.fileTree = [epubDir, metainfDir, mimetypeFile];
-  }
-
-  addCover() {}
-  addChapter() {}
-
-  async build() {
-    return this.zip.generateAsync({
-      type: "blob",
-      mimeType: "application/epub+zip",
-      compression: "DEFLATE",
-    });
   }
 
   async zip() {
@@ -74,7 +24,7 @@ export class EpubBuilder {
 export class EpubAdapter {
   constructor() {}
 
-  async publish() {
-    return new EpubBuilder().build();
+  async publish(draft) {
+    return new EpubBuilder().zip();
   }
 }

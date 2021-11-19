@@ -2,7 +2,7 @@
 
 import { ChromeRuntime, ChromeDownloads } from "./libs/chrome-api";
 import { Publisher } from "./libs/publisher/publisher";
-import { EpubAdapter } from "./libs/publisher/adapters/epub/epub-adapter";
+import { EpubAdapter } from "./libs/publisher/adapters/epub/v3/epub-adapter";
 import { Sitemap, Sites } from "./libs/sitemap";
 
 export const BACKGROUND_API = {
@@ -63,8 +63,9 @@ class Background {
   async clipContents(payload) {
     const url = new URL(payload.url);
     const host = url.host;
-    const protocol = url.protocol;
-    this.sites.addSitemap(host);
+    if (!this.sites.hasSitemap(host)) {
+      this.sites.addSitemap(host);
+    }
     const sitemap = this.sites.getSitemap(host);
     sitemap.addPath(payload.url);
   }

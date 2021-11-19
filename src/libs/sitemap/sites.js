@@ -26,6 +26,9 @@ export class Sites {
     }
   }
 
+  hasSitemap(host) {
+    return true;
+  }
   addSitemap(host) {}
   getSitemap(host) {}
   removeSitemap(host) {}
