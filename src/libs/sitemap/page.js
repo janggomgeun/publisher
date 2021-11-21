@@ -20,6 +20,8 @@ export class Page {
     console.log("loadContents");
     await this.loadRawHtmlFromFullUrl();
     this.contents = new Contents(this.rawHtml);
+    console.log("this.contents", this.contents);
+
     return;
   }
 }

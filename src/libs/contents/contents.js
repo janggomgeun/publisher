@@ -19,33 +19,25 @@ export class Contents {
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
 
+    console.log("hmm");
     this.document = this.$document.html();
+    console.log("this.document", this.document);
+
     this.loading = this.loadResources();
   }
 
   extractDocumentFromRawHtml(rawHtml) {
     console.log("extractDocumentFromRawHtml");
-    const test = `
-      <?xml version="1.0" encoding="UTF-8"?>
-      <!DOCTYPE html>
-      <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
-        <head>
-          <title>Children's Literature</title>
-          <link rel="stylesheet" type="text/css" href="css/epub.css" />
-        </head>
-        <body>
-        <div class="hmm" style="width: 100px;">test</div>
-        <img src="https://picsum.photos/200/300" alt="Cover Image" title="Cover Image" />
-          <a href="https://naver.com">네이버</a>
-        </body>
-      </html>
-      `;
-
-    this.$ = cheerio.load(test);
+    this.$ = cheerio.load(rawHtml);
     this.title = this.$("title").text();
+
     // TODO 나중에는 domain별로 추출 요소 우선순위가 달라질 수 있다.
     const tagsInPriority = ["body", "main", "article"];
-    this.$document = cheerio.load(this.$(tagsInPriority[0]).html());
+    this.$document = cheerio.load(
+      this.$(tagsInPriority[0]).html(),
+      null,
+      false
+    );
   }
 
   clearStyleFromDocument() {
@@ -89,17 +81,29 @@ export class Contents {
     referenceTags.forEach((tag) => {
       self.$document(tag).each((i, el) => {
         const source = self.$document(el).attr("href");
+        console.log("source", source);
+
         const sourceText = self.$document(el).text();
-        const splitSource = source.split("/");
+        console.log("sourceText", sourceText);
+
+        const splitSource = source ? source.split("/") : [];
         const name = sourceText
           ? sourceText
           : splitSource[splitSource.length - 1];
+
+        console.log("name", name);
+
         const type = tag === "a" ? "link" : tag;
+        console.log("type", type);
+
         const reference = Reference.create(
           name ? name : new Date().getTime(),
           type,
           source
         );
+
+        console.log("reference", reference);
+
         self.references.push(reference);
       });
     });

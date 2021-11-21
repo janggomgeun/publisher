@@ -94,14 +94,10 @@ class Background {
       throw new Error("There are no selected pages.");
     }
 
-    console.log("selectedPages", selectedPages);
-
     for (let n = 0; n < selectedPages.length; ++n) {
       const page = selectedPages[n];
       await page.contents.loading;
       const contents = page.contents;
-      console.log("contents", contents);
-
       const chapter = new Chapter(n, contents.title, contents);
       this.publisher.addChapter(chapter);
     }
