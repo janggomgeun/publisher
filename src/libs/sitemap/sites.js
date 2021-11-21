@@ -17,7 +17,14 @@ export class Sites {
 
   async save() {
     await this.storage.set(HOST_SITE_MAP_KEY, JSON.parse(this.hostSitemap));
-    await this.storage.set(URL_PAGE_MAP_KEY, JSON.parse(this.urlPageMap));
+
+    const tempUrlPageMap = {};
+    Object.entries(this.urlPageMap).forEach(([url, page]) => {
+      tempUrlPageMap[url] = {
+        fullUrl: page.fullUrl,
+      };
+    });
+    await this.storage.set(URL_PAGE_MAP_KEY, JSON.parse(tempUrlPageMap));
   }
 
   async restore() {

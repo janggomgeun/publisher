@@ -5,5 +5,8 @@ export class Reference {
     this.source = source;
   }
 
-  static create() {}
+  static create(name, type, source) {
+    const id = `ref_${type}_${name}`;
+    return new Reference(id, type, source);
+  }
 }

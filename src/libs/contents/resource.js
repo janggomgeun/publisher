@@ -13,7 +13,8 @@ export class Resource extends Reference {
     this.data = data;
   }
 
-  static create() {
-    const id = `res_${this.type}_`;
+  static create(name, type, source) {
+    const id = `res_${this.type}_${name}`;
+    return new Resource(id, type, source);
   }
 }
