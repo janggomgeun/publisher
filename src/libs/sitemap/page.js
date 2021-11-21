@@ -18,6 +18,7 @@ export class Page {
   async loadContents() {
     await this.loadRawHtmlFromFullUrl();
     this.contents = Contents.fromHtml(this.rawHtml);
+    console.log("this.contents.document", this.contents.document);
     return;
   }
 }

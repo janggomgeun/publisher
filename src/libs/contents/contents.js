@@ -1,11 +1,13 @@
 "use strict";
 
 import * as cheerio from "cheerio";
+import { Reference } from "./reference";
 import { Resource } from "./resource";
 
 export class Contents {
   constructor() {
     this.$ = undefined;
+    this.$document = undefined;
     this.document = undefined;
     this.resources = [];
     this.references = [];
@@ -22,7 +24,8 @@ export class Contents {
         <link rel="stylesheet" type="text/css" href="css/epub.css" />
       </head>
       <body>
-        <img src="https://picsum.photos/200/300" alt="Cover Image" title="Cover Image" />
+      <div class="hmm" style="width: 100px;">test</div>
+      <img src="https://picsum.photos/200/300" alt="Cover Image" title="Cover Image" />
         <a href="https://naver.com">네이버</a>
       </body>
     </html>
@@ -32,7 +35,7 @@ export class Contents {
 
     // TODO 나중에는 domain별로 추출 요소 우선순위가 달라질 수 있다.
     const tagsInPriority = ["body", "main", "article"];
-    this.$ = this.$(tagsInPriority[0]);
+    this.$document = this.$(tagsInPriority[0]);
   }
 
   clearStyleFromDocument() {
@@ -76,18 +79,22 @@ export class Contents {
         ? sourceText
         : splitSource[splitSource.length - 1];
       const type = tag === "a" ? "link" : tag;
-      const resource = Resource.create(
-        name ?? new Date().getTime(),
+      const reference = Reference.create(
+        name ? name : new Date().getTime(),
         type,
         source
       );
-      this.resources.push(resource);
+      this.references.push(reference);
     });
   }
 
   async loadResources() {
     const loadingResources = [];
     Object.entries(this.contents.resources).forEach(([_, resources]) => {
+      if (!resources.length) {
+        return;
+      }
+
       loadingResources.push(
         ...resources.map(async (resource) => {
           return this.loadResource(resource);
@@ -111,6 +118,7 @@ export class Contents {
     this.clearStyleFromDocument();
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
+    this.document = this.$document.html();
     this.loading = loadResources();
   }
 }
