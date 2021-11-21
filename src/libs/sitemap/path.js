@@ -8,21 +8,21 @@ export class Path {
     this.map = new Map();
   }
 
-  selectPath() {
+  select() {
     if (this.selected) {
       console.warn("It is already selected");
     }
     this.selected = true;
   }
 
-  unselectPath() {
+  unselect() {
     if (!this.selected) {
       console.warn("It is already unselected");
     }
     this.selected = false;
   }
 
-  static fromFullUrl(fullUrl) {
-    return new Path(fullUrl);
+  static fromFullUrl(fullUrl, name) {
+    return new Path(fullUrl, name);
   }
 }

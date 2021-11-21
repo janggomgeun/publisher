@@ -13,10 +13,17 @@ export class Sitemap extends Path {
 
   addPath(fullUrl) {
     const url = new URL(fullUrl);
-    const name = "";
-    const path = Path.fromFullUrl(fullUrl, name);
+    const fullPath = `${url.pathname}${url.search}`;
+    const fullPathSplits = fullPath.split("/");
 
-    this.map.set(path.name, path);
+    let pathMap = this.map;
+    fullPathSplits.forEach((split) => {
+      if (!pathMap.has(split)) {
+        const path = Path.fromFullUrl(fullUrl, split);
+        path.select();
+        pathMap.set(split, path);
+      }
+    });
   }
 
   static fromHostUrl(host) {
