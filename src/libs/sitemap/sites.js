@@ -16,7 +16,7 @@ export class Sites {
   }
 
   async save() {
-    await this.storage.set(HOST_SITE_MAP_KEY, JSON.parse(this.hostSitemap));
+    await this.storage.set(HOST_SITE_MAP_KEY, this.hostSitemap);
 
     const tempUrlPageMap = {};
     Object.entries(this.urlPageMap).forEach(([url, page]) => {
@@ -24,38 +24,40 @@ export class Sites {
         fullUrl: page.fullUrl,
       };
     });
-    await this.storage.set(URL_PAGE_MAP_KEY, JSON.parse(tempUrlPageMap));
+    await this.storage.set(URL_PAGE_MAP_KEY, tempUrlPageMap);
   }
 
   async restore() {
-    const hostSiteMapAsJsonString = await this.storage.get(HOST_SITE_MAP_KEY);
-    if (hostSiteMapAsJsonString) {
-      const hostSiteMap = JSON.parse(hostSiteMapAsJsonString);
-      if (hostSiteMap) {
-        Object.entries(hostSiteMap).forEach(([host, hostSiteMapJson]) => {
-          this.hostSitemap.set(host, Sitemap.fromJson(hostSiteMapJson));
-        });
-      }
+    const hostSiteMap = await this.storage.get(HOST_SITE_MAP_KEY);
+    console.log("hostSiteMap", hostSiteMap);
+
+    if (hostSiteMap) {
+      Object.entries(hostSiteMap).forEach(([host, hostSiteMapJson]) => {
+        this.hostSitemap.set(host, Sitemap.fromJson(hostSiteMapJson));
+      });
     }
 
-    const urlPageMapAsJsonString = await this.storage.get(URL_PAGE_MAP_KEY);
-    if (urlPageMapAsJsonString) {
-      const urlPageMap = JSON.parse(urlPageMapAsJsonString);
-      if (urlPageMap) {
-        Object.entries(urlPageMap).forEach(([url, page]) => {
-          this.urlPageMap.set(url, page);
-        });
-      }
+    const urlPageMap = await this.storage.get(URL_PAGE_MAP_KEY);
+    console.log("urlPageMap", urlPageMap);
+
+    if (urlPageMap) {
+      Object.entries(urlPageMap).forEach(([url, page]) => {
+        this.urlPageMap.set(url, page);
+      });
     }
   }
 
   async addPage(fullUrl) {
+    console.log("addPage");
+    console.log("fullUrl", fullUrl);
+
     const url = new URL(fullUrl);
     if (!this.hasSitemap(url.host)) {
-      this.addSitemap(url.host);
+      this.addSitemap(fullUrl);
     }
 
     const sitemap = this.hostSitemap.get(url.host);
+    console.log("sitemap", sitemap);
     sitemap.addPath(fullUrl);
 
     const page = new Page(fullUrl);
@@ -84,7 +86,8 @@ export class Sites {
     return this.hostSitemap.has(host);
   }
 
-  addSitemap(host) {
-    this.hostSitemap.set(host, Sitemap.fromHostUrl(host));
+  addSitemap(url) {
+    const host = new URL(url).host;
+    this.hostSitemap.set(host, Sitemap.fromHostUrl(url));
   }
 }

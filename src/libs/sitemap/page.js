@@ -8,6 +8,7 @@ export class Page {
   }
 
   async loadRawHtmlFromFullUrl() {
+    console.log("loadRawHtmlFromFullUrl");
     const response = await fetch(this.fullUrl, {
       method: "GET",
     });
@@ -16,8 +17,9 @@ export class Page {
   }
 
   async loadContents() {
+    console.log("loadContents");
     await this.loadRawHtmlFromFullUrl();
-    this.contents = Contents.fromHtml(this.rawHtml);
+    this.contents = new Contents(this.rawHtml);
     console.log("this.contents.document", this.contents.document);
     return;
   }

@@ -42,14 +42,14 @@ class Background {
     this.publication = undefined;
   }
 
-  init() {
+  async init() {
     this.runtime.addListener(async (type, payload, sender, sendResponse) => {
       if (!(type in BACKGROUND_API_COMMAND_MAP)) {
         throw new Error("The command does not exist");
       }
 
       try {
-        await this.BACKGROUND_API_COMMAND_MAP[type](payload);
+        await this[BACKGROUND_API_COMMAND_MAP[type]](payload);
         sendResponse({});
       } catch (error) {
         sendResponse({
@@ -59,30 +59,31 @@ class Background {
     });
 
     // TODO background is initialized
-    this.runtime.sendMessage({
-      payload: {
-        sites: {
-          ...this.sites,
-        },
-      },
-    });
+    // await this.runtime.sendMessage({
+    //   payload: {
+    //     sites: {
+    //       ...this.sites,
+    //     },
+    //   },
+    // });
   }
 
   async clipPage(payload) {
+    console.log("clipPage");
     if (!("url" in payload)) {
       throw new Error("No URL is given");
     }
 
     await this.sites.addPage(payload.url);
 
-    this.runtime.sendMessage({
-      type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`,
-      payload: {
-        sites: {
-          ...this.sites,
-        },
-      },
-    });
+    // this.runtime.sendMessage({
+    //   type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`,
+    //   payload: {
+    //     sites: {
+    //       ...this.sites,
+    //     },
+    //   },
+    // });
   }
 
   async publish() {

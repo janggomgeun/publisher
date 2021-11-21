@@ -5,99 +5,127 @@ import { Reference } from "./reference";
 import { Resource } from "./resource";
 
 export class Contents {
-  constructor() {
+  constructor(html) {
     this.$ = undefined;
     this.$document = undefined;
     this.document = undefined;
     this.resources = [];
     this.references = [];
     this.loading = undefined;
+
+    this.extractDocumentFromRawHtml(html);
+    this.clearStyleFromDocument();
+    this.extractResourcesFromDocument();
+    this.extractReferencesFromDocument();
+
+    this.document = this.$document.html();
+    this.loading = this.loadResources();
   }
 
   extractDocumentFromRawHtml(rawHtml) {
+    console.log("extractDocumentFromRawHtml");
     const test = `
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE html>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
-      <head>
-        <title>Children's Literature</title>
-        <link rel="stylesheet" type="text/css" href="css/epub.css" />
-      </head>
-      <body>
-      <div class="hmm" style="width: 100px;">test</div>
-      <img src="https://picsum.photos/200/300" alt="Cover Image" title="Cover Image" />
-        <a href="https://naver.com">네이버</a>
-      </body>
-    </html>
-    `;
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE html>
+      <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
+        <head>
+          <title>Children's Literature</title>
+          <link rel="stylesheet" type="text/css" href="css/epub.css" />
+        </head>
+        <body>
+        <div class="hmm" style="width: 100px;">test</div>
+        <img src="https://picsum.photos/200/300" alt="Cover Image" title="Cover Image" />
+          <a href="https://naver.com">네이버</a>
+        </body>
+      </html>
+      `;
 
     this.$ = cheerio.load(test);
 
     // TODO 나중에는 domain별로 추출 요소 우선순위가 달라질 수 있다.
     const tagsInPriority = ["body", "main", "article"];
-    this.$document = this.$(tagsInPriority[0]);
+    this.$document = cheerio.load(this.$(tagsInPriority[0]).html());
   }
 
   clearStyleFromDocument() {
-    this.$("*").each(function () {
-      this.removeAttr("class");
-      this.removeAttr("style");
+    console.log("clearStyleFromDocument");
+    const self = this;
+    this.$document("*").each(function (i, el) {
+      console.log("i", i);
+
+      console.log("el", el);
+      self.$document(el).removeAttr("class");
+      self.$document(el).removeAttr("style");
     });
   }
 
   convertIncomptibleElements() {
+    console.log("convertIncomptibleElements");
     const incompatibleTags = ["canvas", "svg"];
   }
 
   extractResourcesFromDocument() {
+    console.log("extractResourcesFromDocument");
     const self = this;
     const resourceTags = ["img", "audio", "video"];
     resourceTags.forEach((tag) => {
-      self.$(tag).each((_) => {
-        const source = self.$(this).attr("src");
-        const sourceTitle = self.$(this).attr("title");
+      self.$document(tag).each((i, el) => {
+        const source = self.$document(el).attr("src");
+        const sourceTitle = self.$document(el).attr("title");
         const splitSource = source.split("/");
         const name = sourceTitle
           ? sourceTitle
           : splitSource[splitSource.length - 1];
         const type = tag === "img" ? "image" : tag;
         const resource = Resource.create(name, type, source);
-        this.resources.push(resource);
-        self.$(this).attr("src", `../${type}s/${resource.id}`);
+        self.resources.push(resource);
+        self.$document(el).attr("src", `../${type}s/${resource.id}`);
       });
     });
   }
 
   extractReferencesFromDocument() {
+    console.log("extractReferencesFromDocument");
     const self = this;
     const referenceTags = ["a"];
     referenceTags.forEach((tag) => {
-      const source = self.$(this).attr("href");
-      const sourceText = self.$(this).text();
-      const splitSource = source.split("/");
-      const name = sourceText
-        ? sourceText
-        : splitSource[splitSource.length - 1];
-      const type = tag === "a" ? "link" : tag;
-      const reference = Reference.create(
-        name ? name : new Date().getTime(),
-        type,
-        source
-      );
-      this.references.push(reference);
+      self.$document(tag).each((i, el) => {
+        const source = self.$document(el).attr("href");
+        console.log("source", source);
+
+        const sourceText = self.$document(el).text();
+        console.log("sourceText", sourceText);
+
+        const splitSource = source.split("/");
+        const name = sourceText
+          ? sourceText
+          : splitSource[splitSource.length - 1];
+
+        console.log("name", name);
+
+        const type = tag === "a" ? "link" : tag;
+        const reference = Reference.create(
+          name ? name : new Date().getTime(),
+          type,
+          source
+        );
+        self.references.push(reference);
+      });
     });
   }
 
   async loadResources() {
+    console.log("loadResources");
     const loadingResources = [];
-    Object.entries(this.contents.resources).forEach(([_, resources]) => {
+    const self = this;
+    Object.entries(this.resources).forEach(([_, resources]) => {
       if (!resources.length) {
         return;
       }
 
       loadingResources.push(
         ...resources.map(async (resource) => {
-          return this.loadResource(resource);
+          return self.loadResource(resource);
         })
       );
     });
@@ -111,14 +139,5 @@ export class Contents {
 
   async loadResource(resource) {
     return resource.load();
-  }
-
-  static fromHtml(html) {
-    this.extractDocumentFromRawHtml(html);
-    this.clearStyleFromDocument();
-    this.extractResourcesFromDocument();
-    this.extractReferencesFromDocument();
-    this.document = this.$document.html();
-    this.loading = loadResources();
   }
 }
