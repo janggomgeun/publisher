@@ -69,14 +69,45 @@ export class Sites {
   }
 
   getSelectedPages() {
-    const paths = [];
+    const allPaths = [];
+    const extractChildPathFullUrls = (path) => {
+      const paths = [{ fullUrl: path.fullUrl, selected: path.selected }];
+      for (const childPath of path.map.values()) {
+        console.log("childPath.name", childPath.name);
+
+        const extracted = extractChildPathFullUrls(childPath);
+        if (extracted.length) {
+          paths.push(...extractChildPathFullUrls(childPath));
+        }
+      }
+      return paths;
+    };
+
+    console.log("this.hostSitemap", this.hostSitemap.values());
+
+    for (const path of this.hostSitemap.values()) {
+      console.log("path", path);
+      const extractedSitemapPaths = extractChildPathFullUrls(path);
+      if (extractedSitemapPaths.length) {
+        allPaths.push(...extractedSitemapPaths);
+      }
+    }
+
+    console.log("allPathFullUrls", allPaths);
+
+    const selectedPathFullUrls = allPaths
+      .filter((path) => path.selected)
+      .map((path) => path.fullUrl);
+
+    console.log("selectedPathFullUrls", selectedPathFullUrls);
+
     const selectedPages = [];
-    paths.forEach((path) => {
-      if (!this.urlPageMap.has(path.fullUrl)) {
+    selectedPathFullUrls.forEach((fullUrl) => {
+      if (!this.urlPageMap.has(fullUrl)) {
         return;
       }
 
-      const selectedPage = this.urlPageMap.get(path.fullUrl);
+      const selectedPage = this.urlPageMap.get(fullUrl);
       selectedPages.push(selectedPage);
     });
     return selectedPages;

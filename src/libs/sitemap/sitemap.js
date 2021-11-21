@@ -4,11 +4,13 @@ import { Path } from "./path";
 
 export class Sitemap extends Path {
   constructor(urlAsString) {
-    super(urlAsString);
-
     const url = new URL(urlAsString);
-    this.protocol = url.protocol;
-    this.host = url.host;
+    const protocol = url.protocol;
+    const host = url.host;
+    super(`${protocol}//${host}`);
+
+    this.protocol = protocol;
+    this.host = host;
   }
 
   addPath(fullUrl) {
@@ -42,12 +44,23 @@ export class Sitemap extends Path {
     console.log("fullPathSplits", fullPathSplits);
 
     let pathMap = this.map;
-    fullPathSplits.forEach((split) => {
+    let currentPath = `${this.protocol}//${this.host}`;
+    console.log("currentPath", currentPath);
+
+    fullPathSplits.forEach((split, index) => {
+      currentPath += split;
       if (!pathMap.has(split)) {
-        const path = Path.fromFullUrl(fullUrl, split);
-        path.select();
+        const path = Path.fromFullUrl(currentPath, split);
         console.log("split", split);
         pathMap.set(split, path);
+        if (index === fullPathSplits.length - 1) {
+          path.select();
+        }
+      } else {
+        if (index === fullPathSplits.length - 1) {
+          const path = pathMap.get(split);
+          path.select();
+        }
       }
       pathMap = pathMap.get(split).map;
     });

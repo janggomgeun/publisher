@@ -87,31 +87,34 @@ class Background {
   }
 
   async publish() {
+    console.log("publish");
     const selectedPages = this.sites.getSelectedPages();
+    console.log("selectedPages", selectedPages);
+
     if (!selectedPages.length) {
       throw new Error("There are no selected pages.");
     }
 
-    for (const page of selectedPages) {
-      await page.contents.loading;
-      const contents = page.contents;
-      const chapter = new Chapter(contents.title, contents);
-      this.publisher.addChapter(chapter);
-    }
-    this.publisher.addCover("unknown");
-    this.publisher.addAuthor("unknown");
-    this.publisher.addPublisher("unknown");
-    this.publication = await this.publisher.publish();
-    this.publisher.throwDraftOut();
+    // for (const page of selectedPages) {
+    //   await page.contents.loading;
+    //   const contents = page.contents;
+    //   const chapter = new Chapter(contents.title, contents);
+    //   this.publisher.addChapter(chapter);
+    // }
+    // this.publisher.addCover("unknown");
+    // this.publisher.addAuthor("unknown");
+    // this.publisher.addPublisher("unknown");
+    // this.publication = await this.publisher.publish();
+    // this.publisher.throwDraftOut();
 
-    this.runtime.sendMessage({
-      type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PUBLISHED}`,
-      payload: {
-        sites: {
-          ...this.sites,
-        },
-      },
-    });
+    // this.runtime.sendMessage({
+    //   type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PUBLISHED}`,
+    //   payload: {
+    //     sites: {
+    //       ...this.sites,
+    //     },
+    //   },
+    // });
   }
 
   async download() {
