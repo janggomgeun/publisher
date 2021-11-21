@@ -6,24 +6,28 @@ import {
   navTemplate,
   chapterTemplate,
   packageOpfTemplate,
+  container,
 } from "./templates/base";
 
 export class EpubBuilder {
   constructor(publication) {
     const cssDir = new Directory("css");
-    cssDir.addFile("epub.css", epubCss);
+    cssDir.addFile(new File("epub.css", epubCss));
 
     const contentsDir = new Directory("contents");
 
     const cover = coverTemplate;
-    contentsDir.addFile("cover.xhtml", coverTemplate);
+    contentsDir.addFile(new File("cover.xhtml", coverTemplate));
 
     const nav = navTemplate;
-    contentsDir.addFile("nav.xhtml", nav);
+    contentsDir.addFile(new File("nav.xhtml", nav));
+    console.log("contentsDir", contentsDir);
 
     publication.chapters.forEach((chapter) => {
       chapter.contents.resources;
-      contentsDir.addFile(`chapter_${chapter.id}.xhtml`, chapterTemplate);
+      contentsDir.addFile(
+        new File(`chapter_${chapter.id}.xhtml`, chapterTemplate)
+      );
     });
 
     const epubDir = new Directory("EPUB");
@@ -38,10 +42,12 @@ export class EpubBuilder {
       modifiedAt: new Date(),
       items: [],
     };
-    epubDir.addFile("package.opf", packageOpf);
+    epubDir.addFile(new File("package.opf", packageOpf));
+    console.log("packageOpf", packageOpf);
 
     const metainfDir = new Directory("META-INF");
     metainfDir.addFile(new File("container.xhtml", container));
+    console.log("metainfDir", metainfDir);
 
     const mimetypeFile = new File("mimetype", "application/epub+zip");
 
@@ -49,24 +55,30 @@ export class EpubBuilder {
   }
 
   async zip() {
-    this.zipper = new JSZip();
-    this.zipFiles(this.files);
-    return this.zipper.generateAsync({
-      type: "blob",
-      mimeType: "application/epub+zip",
-      compression: "DEFLATE",
-    });
+    try {
+      console.log("this.files", this.files);
+      this.zipper = new JSZip();
+      this.zipFiles(this.files, this.zipper);
+      return this.zipper.generateAsync({
+        type: "blob",
+        mimeType: "application/epub+zip",
+        compression: "DEFLATE",
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  zipFiles(files) {
+  zipFiles(files, zipper) {
     const self = this;
-    this.files.forEach((file) => {
+    files.forEach((file) => {
       if (file.isDir) {
+        const dir = zipper.folder(file.name);
         if (file.files.length) {
-          self.zipFiles(file.files);
+          self.zipFiles(file.files, dir);
         }
       } else {
-        self.zipper.file(file.name, file.data);
+        zipper.file(file.name, file.data);
       }
     });
   }
