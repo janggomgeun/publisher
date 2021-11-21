@@ -16,15 +16,13 @@ export class EpubBuilder {
 
     const contentsDir = new Directory("contents");
 
-    const cover = coverTemplate;
-    contentsDir.addFile(new File("cover.xhtml", coverTemplate));
+    // const cover = coverTemplate;
+    // contentsDir.addFile(new File("cover.xhtml", coverTemplate));
 
     const nav = navTemplate;
     contentsDir.addFile(new File("nav.xhtml", nav));
-    console.log("contentsDir", contentsDir);
 
     publication.chapters.forEach((chapter) => {
-      chapter.contents.resources;
       contentsDir.addFile(
         new File(`chapter_${chapter.id}.xhtml`, chapterTemplate)
       );
@@ -43,11 +41,9 @@ export class EpubBuilder {
       items: [],
     };
     epubDir.addFile(new File("package.opf", packageOpf));
-    console.log("packageOpf", packageOpf);
 
     const metainfDir = new Directory("META-INF");
     metainfDir.addFile(new File("container.xhtml", container));
-    console.log("metainfDir", metainfDir);
 
     const mimetypeFile = new File("mimetype", "application/epub+zip");
 

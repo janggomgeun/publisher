@@ -89,16 +89,20 @@ class Background {
   async publish() {
     console.log("publish");
     const selectedPages = this.sites.getSelectedPages();
-    console.log("selectedPages", selectedPages);
 
     if (!selectedPages.length) {
       throw new Error("There are no selected pages.");
     }
 
-    for (const page of selectedPages) {
+    console.log("selectedPages", selectedPages);
+
+    for (let n = 0; n < selectedPages.length; ++n) {
+      const page = selectedPages[n];
       await page.contents.loading;
       const contents = page.contents;
-      const chapter = new Chapter(contents.title, contents);
+      console.log("contents", contents);
+
+      const chapter = new Chapter(n, contents.title, contents);
       this.publisher.addChapter(chapter);
     }
     this.publisher.addCover("unknown");

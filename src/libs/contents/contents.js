@@ -8,6 +8,7 @@ export class Contents {
   constructor(html) {
     this.$ = undefined;
     this.$document = undefined;
+    this.title = undefined;
     this.document = undefined;
     this.resources = [];
     this.references = [];
@@ -41,7 +42,7 @@ export class Contents {
       `;
 
     this.$ = cheerio.load(test);
-
+    this.title = this.$("title").text();
     // TODO 나중에는 domain별로 추출 요소 우선순위가 달라질 수 있다.
     const tagsInPriority = ["body", "main", "article"];
     this.$document = cheerio.load(this.$(tagsInPriority[0]).html());
@@ -51,9 +52,6 @@ export class Contents {
     console.log("clearStyleFromDocument");
     const self = this;
     this.$document("*").each(function (i, el) {
-      console.log("i", i);
-
-      console.log("el", el);
       self.$document(el).removeAttr("class");
       self.$document(el).removeAttr("style");
     });
@@ -91,18 +89,11 @@ export class Contents {
     referenceTags.forEach((tag) => {
       self.$document(tag).each((i, el) => {
         const source = self.$document(el).attr("href");
-        console.log("source", source);
-
         const sourceText = self.$document(el).text();
-        console.log("sourceText", sourceText);
-
         const splitSource = source.split("/");
         const name = sourceText
           ? sourceText
           : splitSource[splitSource.length - 1];
-
-        console.log("name", name);
-
         const type = tag === "a" ? "link" : tag;
         const reference = Reference.create(
           name ? name : new Date().getTime(),

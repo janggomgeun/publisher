@@ -15,18 +15,13 @@ export class Sitemap extends Path {
 
   addPath(fullUrl) {
     console.log("addPath");
-    console.log("fullUrl", fullUrl);
 
     const url = new URL(fullUrl);
     const fullPath = `${url.pathname}${url.search}`;
-    console.log("fullPath", fullPath);
 
     const tempSplits = fullPath.split("/");
     const fullPathSplits = ["/"];
     tempSplits.forEach((split, index) => {
-      console.log("split", split);
-      console.log("index", index);
-
       if (0 < index && index < tempSplits.length - 1) {
         fullPathSplits.push(split);
         fullPathSplits.push("/");
@@ -41,17 +36,14 @@ export class Sitemap extends Path {
       }
       return;
     });
-    console.log("fullPathSplits", fullPathSplits);
 
     let pathMap = this.map;
     let currentPath = `${this.protocol}//${this.host}`;
-    console.log("currentPath", currentPath);
 
     fullPathSplits.forEach((split, index) => {
       currentPath += split;
       if (!pathMap.has(split)) {
         const path = Path.fromFullUrl(currentPath, split);
-        console.log("split", split);
         pathMap.set(split, path);
         if (index === fullPathSplits.length - 1) {
           path.select();
@@ -67,9 +59,6 @@ export class Sitemap extends Path {
   }
 
   static fromHostUrl(url) {
-    console.log("fromHostUrl");
-    console.log("url", url);
-
     return new Sitemap(url);
   }
 
