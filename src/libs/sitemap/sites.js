@@ -10,8 +10,8 @@ const URL_PAGE_MAP_KEY = "url_page_map";
 export class Sites {
   constructor() {
     this.storage = new ChromeStorage();
-    this.hostSitemap = {};
-    this.urlPageMap = {};
+    this.hostSitemap = new Map();
+    this.urlPageMap = new Map();
     this.restore();
   }
 
@@ -33,7 +33,7 @@ export class Sites {
       const hostSiteMap = JSON.parse(hostSiteMapAsJsonString);
       if (hostSiteMap) {
         Object.entries(hostSiteMap).forEach(([host, hostSiteMapJson]) => {
-          this.hostSitemap[host] = Sitemap.fromJson(hostSiteMapJson);
+          this.hostSitemap.set(host, Sitemap.fromJson(hostSiteMapJson));
         });
       }
     }
@@ -43,7 +43,7 @@ export class Sites {
       const urlPageMap = JSON.parse(urlPageMapAsJsonString);
       if (urlPageMap) {
         Object.entries(urlPageMap).forEach(([url, page]) => {
-          this.urlPageMap[url] = page;
+          this.urlPageMap.set(url, page);
         });
       }
     }
@@ -55,7 +55,7 @@ export class Sites {
       this.addSitemap(url.host);
     }
 
-    const sitemap = this.hostSitemap[url.host];
+    const sitemap = this.hostSitemap.get(url.host);
     sitemap.addPath(fullUrl);
 
     const page = new Page(fullUrl);
@@ -70,21 +70,21 @@ export class Sites {
     const paths = [];
     const selectedPages = [];
     paths.forEach((path) => {
-      if (!(path.fullUrl in this.urlPageMap)) {
+      if (!this.urlPageMap.has(path.fullUrl)) {
         return;
       }
 
-      const selectedPage = this.urlPageMap[path.fullUrl];
+      const selectedPage = this.urlPageMap.get(path.fullUrl);
       selectedPages.push(selectedPage);
     });
     return selectedPages;
   }
 
   hasSitemap(host) {
-    return host in this.hostSitemap;
+    return this.hostSitemap.has(host);
   }
 
   addSitemap(host) {
-    this.hostSitemap[host] = Sitemap.fromHostUrl(host);
+    this.hostSitemap.set(host, Sitemap.fromHostUrl(host));
   }
 }

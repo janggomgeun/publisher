@@ -5,7 +5,7 @@ export class Path {
     this.fullUrl = fullUrl;
     this.name = name;
     this.selected = false;
-    this.map = {};
+    this.map = new Map();
   }
 
   selectPath() {

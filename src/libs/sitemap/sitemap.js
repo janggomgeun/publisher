@@ -16,11 +16,11 @@ export class Sitemap extends Path {
     const name = "";
     const path = Path.fromFullUrl(fullUrl, name);
 
-    this.map[path.name] = path;
+    this.map.set(path.name, path);
   }
 
   static fromHostUrl(host) {
-    this.map[host] = undefined;
+    this.map.delete(host);
   }
 
   static fromJson(json) {
