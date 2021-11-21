@@ -11,6 +11,16 @@ import {
 
 export class EpubBuilder {
   constructor(publication) {
+    this.files = [
+      this.buildEpubDir(),
+      this.buildMetaInfDir(),
+      new File("mimetype", "application/epub+zip"),
+    ];
+  }
+
+  buildEpubDir() {
+    const epubDir = new Directory("EPUB");
+
     const cssDir = new Directory("css");
     cssDir.addFile(new File("epub.css", epubCss));
 
@@ -28,7 +38,6 @@ export class EpubBuilder {
       );
     });
 
-    const epubDir = new Directory("EPUB");
     epubDir.addFiles([contentsDir, cssDir]);
 
     const packageOpf = packageOpfTemplate;
@@ -42,12 +51,13 @@ export class EpubBuilder {
     };
     epubDir.addFile(new File("package.opf", packageOpf));
 
+    return epubDir;
+  }
+
+  buildMetaInfDir() {
     const metainfDir = new Directory("META-INF");
     metainfDir.addFile(new File("container.xhtml", container));
-
-    const mimetypeFile = new File("mimetype", "application/epub+zip");
-
-    this.files = [epubDir, metainfDir, mimetypeFile];
+    return metainfDir;
   }
 
   async zip() {
