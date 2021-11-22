@@ -5,9 +5,9 @@ import { EPUB_CSS, MIMETYPE, CONTAINER } from "./templates/constants";
 export class EpubBuilder {
   constructor(publication) {
     this.files = [
-      this.buildEpubDir(publication),
-      this.buildMetaInfDir(publication),
       new File("mimetype", MIMETYPE),
+      this.buildMetaInfDir(publication),
+      this.buildEpubDir(publication),
     ];
     console.log("this.files", this.files);
   }
@@ -24,11 +24,9 @@ export class EpubBuilder {
     // const cover = coverTemplate;
     // contentsDir.addFile(new File("cover.xhtml", coverTemplate));
 
-    // const nav = ``;
-    // contentsDir.addFile(new File("nav.xhtml", nav));
-
     const packageOpfManifestItems = [];
     const packageOpfSpineItems = [];
+    const navItems = [];
     publication.chapters.forEach((chapter) => {
       console.log("chapter", chapter);
 
@@ -47,10 +45,31 @@ export class EpubBuilder {
       console.log("chapterContents", chapterContents);
       contentsDir.addFile(new File(`${chapter.id}.xhtml`, chapterContents));
       packageOpfManifestItems.push(
-        `<item id="contents/${chapter.id}" href="${chapter.id}" media-type="application/xhtml+xml"/>`
+        `<item id="${chapter.id}" href="contents/${chapter.id}" media-type="application/xhtml+xml"/>`
       );
       packageOpfSpineItems.push(`<itemref idref="${chapter.id}"/>`);
+      navItems.push(
+        `<li><a href="${chapter.id}.xhtml">${chapter.title}</a></li>`
+      );
     });
+
+    const nav = `
+    <?xml version="1.0" encoding="UTF-8"?>
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+        <head>
+            <meta charset="utf-8" />
+            <link rel="stylesheet" type="text/css" href="../css/epub.css" />
+        </head>
+        <body class="reflow">
+            <nav epub:type="toc" id="toc">
+                <ol>
+                    ${navItems}
+                </ol>
+            </nav>
+        </body>
+    </html>
+    `;
+    contentsDir.addFile(new File("nav.xhtml", nav));
 
     epubDir.addFiles([contentsDir, cssDir]);
 
@@ -84,7 +103,7 @@ export class EpubBuilder {
   buildMetaInfDir() {
     console.log("buildMetaInfDir");
     const metainfDir = new Directory("META-INF");
-    metainfDir.addFile(new File("container.xhtml", CONTAINER));
+    metainfDir.addFile(new File("container.xml", CONTAINER));
     return metainfDir;
   }
 
