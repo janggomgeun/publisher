@@ -69,7 +69,7 @@ export class EpubBuilder {
       '<dc:identifier id="pub-id">urn:uuid:fe93046f-af57-475a-a0cb-a0d4bc99ba6d</dc:identifier>' +
       `<dc:title id="title">${publication.title}</dc:title>` +
       "<dc:language>en</dc:language>" +
-      '<meta property="dcterms:modified">2011-01-01T12:00:00Z</meta>' +
+      `<meta property="dcterms:modified">${modifiedAt}</meta>` +
       "</metadata>" +
       "<manifest>" +
       '<item id="nav" href="contents/nav.xhtml" media-type="application/xhtml+xml" properties="nav" />' +
