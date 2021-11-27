@@ -2,7 +2,8 @@
 
 export class Chapter {
   constructor(no, title, contents) {
-    this.id = `ch_${no}_${title.toLowerCase()}`;
+    const trimmedTitle = title.replace(/^\s+|\s+$/g, "");
+    this.id = `ch_${no}_${trimmedTitle}`;
     this.title = title;
     this.contents = contents;
   }
