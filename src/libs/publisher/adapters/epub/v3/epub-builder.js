@@ -6,14 +6,12 @@ export class EpubBuilder {
   constructor(publication) {
     this.files = [
       new File("mimetype", MIMETYPE),
-      this.buildMetaInfDir(publication),
       this.buildEpubDir(publication),
+      this.buildMetaInfDir(publication),
     ];
-    console.log("this.files", this.files);
   }
 
   buildEpubDir(publication) {
-    console.log("buildEpubDir");
     const epubDir = new Directory("EPUB");
 
     const cssDir = new Directory("css");
@@ -27,25 +25,13 @@ export class EpubBuilder {
     const packageOpfManifestItems = [];
     const packageOpfSpineItems = [];
     const navItems = [];
-    publication.chapters.forEach((chapter) => {
-      console.log("chapter", chapter);
 
-      const chapterContents = `<?xml version="1.0" encoding="UTF-8"?>
-      <html xmlns="http://www.w3.org/1999/xhtml">
-          <head>
-              <meta charset="utf-8" />
-              <link rel="stylesheet" type="text/css" href="../css/epub.css" />
-              <title>${chapter.contents.title}</title>
-          </head>
-          <body class="reflow">
-            ${chapter.contents.document}
-          </body>
-      </html>
-      `;
-      console.log("chapterContents", chapterContents);
+    publication.chapters.forEach((chapter) => {
+      const chapterContents = this.buildChapterContents(chapter);
       contentsDir.addFile(new File(`${chapter.id}.xhtml`, chapterContents));
+
       packageOpfManifestItems.push(
-        `<item id="${chapter.id}" href="contents/${chapter.id}" media-type="application/xhtml+xml"/>`
+        `<item id="${chapter.id}" href="contents/${chapter.id}.xhtml" media-type="application/xhtml+xml"/>`
       );
       packageOpfSpineItems.push(`<itemref idref="${chapter.id}"/>`);
       navItems.push(
@@ -53,18 +39,17 @@ export class EpubBuilder {
       );
     });
 
-    const nav = `
-    <?xml version="1.0" encoding="UTF-8"?>
+    const nav = `<?xml version="1.0" encoding="UTF-8"?>
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
         <head>
-            <meta charset="utf-8" />
-            <link rel="stylesheet" type="text/css" href="../css/epub.css" />
+          <title></title>
         </head>
-        <body class="reflow">
-            <nav epub:type="toc" id="toc">
-                <ol>
-                    ${navItems}
-                </ol>
+        <body>
+            <nav epub:type="toc">
+              <h1>Table of Contents</h1>
+              <ol>
+                  ${navItems.join("")}
+              </ol>
             </nav>
         </body>
     </html>
@@ -77,38 +62,51 @@ export class EpubBuilder {
     const creator = "wilson";
     const language = "en-US";
     const modifiedAt = new Date().toISOString();
-    const packageOpf = `<?xml version="1.0" encoding="UTF-8"?>
-    <package xmlns="http://www.idpf.org/2007/opf" version="3.0" xml:lang="en" unique-identifier="uid" prefix="rendition: http://www.idpf.org/vocab/rendition/# cc: http://creativecommons.org/ns#">
-      <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-        <dc:title id="title">${title}</dc:title>
-        <dc:creator>${creator}</dc:creator>
-        <dc:language>${language}</dc:language>    
-        <meta property="dcterms:modified">${modifiedAt}</meta>
-      </metadata>
-      <manifest>
-        ${packageOpfManifestItems}
-      </manifest>
-      <spine>
-        ${packageOpfSpineItems}
-      </spine>
-    </package>
-    `;
+    const packageOpf =
+      '<?xml version="1.0" encoding="UTF-8"?>' +
+      '<package version="3.0" unique-identifier="uid" xmlns="http://www.idpf.org/2007/opf">' +
+      '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+      '<dc:identifier id="pub-id">urn:uuid:fe93046f-af57-475a-a0cb-a0d4bc99ba6d</dc:identifier>' +
+      `<dc:title id="title">${publication.title}</dc:title>` +
+      "<dc:language>en</dc:language>" +
+      '<meta property="dcterms:modified">2011-01-01T12:00:00Z</meta>' +
+      "</metadata>" +
+      "<manifest>" +
+      '<item id="nav" href="contents/nav.xhtml" media-type="application/xhtml+xml" properties="nav" />' +
+      packageOpfManifestItems.join("") +
+      "</manifest>" +
+      "<spine>" +
+      packageOpfSpineItems.join("") +
+      "</spine>" +
+      "</package>";
 
-    console.log("packageOpf", packageOpf);
     epubDir.addFile(new File("package.opf", packageOpf));
 
     return epubDir;
   }
 
+  buildChapterContents(chapter) {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+      <html xmlns="http://www.w3.org/1999/xhtml">
+          <head>
+              <meta charset="utf-8" />
+              <link rel="stylesheet" type="text/css" href="../css/epub.css" />
+              <title>${chapter.contents.title}</title>
+          </head>
+          <body>
+            <h1>hi</h1>
+          </body>
+      </html>
+      `;
+  }
+
   buildMetaInfDir() {
-    console.log("buildMetaInfDir");
     const metainfDir = new Directory("META-INF");
     metainfDir.addFile(new File("container.xml", CONTAINER));
     return metainfDir;
   }
 
   async zip() {
-    console.log("zip");
     this.zipper = new JSZip();
     this.zipFiles(this.files, this.zipper);
     return this.zipper.generateAsync({
