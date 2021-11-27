@@ -2,6 +2,7 @@
 
 export class Publication {
   constructor() {
+    this.title = undefined;
     this.cover = {
       title: undefined,
       image: undefined,

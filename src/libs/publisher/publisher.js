@@ -9,9 +9,11 @@ export class Publisher {
     this.draft = new Publication();
   }
 
-  addCover(title, image) {
-    console.log("addCover");
-    this.draft.cover.title = title;
+  addTitle(title) {
+    this.draft.title = title;
+  }
+
+  addCover(image) {
     this.draft.cover.image = image;
   }
 

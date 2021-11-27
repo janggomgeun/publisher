@@ -88,6 +88,11 @@ class Background {
 
   async publish() {
     console.log("publish");
+    const title = Object.keys(this.sites.hostSitemap).reduce(
+      (prev, curr, currIdx, originalArray) =>
+        prev + curr + (originalArray.length - 1 !== currIdx) ? ", " : "",
+      "N/A"
+    );
     const selectedPages = this.sites.getSelectedPages();
 
     if (!selectedPages.length) {
@@ -101,6 +106,7 @@ class Background {
       const chapter = new Chapter(n, contents.title, contents);
       this.publisher.addChapter(chapter);
     }
+    this.publisher.addTitle(title);
     this.publisher.addCover("unknown");
     this.publisher.addAuthor("unknown");
     this.publisher.addPublisher("unknown");
