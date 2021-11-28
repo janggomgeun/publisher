@@ -45,7 +45,7 @@ export class Contents {
   }
 
   formatHtml(html) {
-    return html;
+    return html.replace(/(<img("[^"]*"|[^\/">])*)>/gi, "$1/>");
   }
 
   extractDocumentFromRawHtml(rawHtml) {
@@ -99,13 +99,21 @@ export class Contents {
     resourceTags.forEach((tag) => {
       self.$document(tag).each((i, el) => {
         const source = self.$document(el).attr("src");
+        const modifiedSource = source
+          ? this.isAbsoluteUrl(source)
+            ? source
+            : this.isRelativeUrl(source)
+            ? `${this.origin}${source}`
+            : source
+          : undefined;
+
         const sourceTitle = self.$document(el).attr("title");
         const splitSource = source.split("/");
         const name = sourceTitle
           ? sourceTitle
           : splitSource[splitSource.length - 1];
         const type = tag === "img" ? "image" : tag;
-        const resource = Resource.create(name, type, source);
+        const resource = Resource.create(name, type, modifiedSource);
         self.resources.push(resource);
         self.$document(el).attr("src", `../${type}s/${resource.id}`);
       });
@@ -173,18 +181,14 @@ export class Contents {
 
   async loadResources() {
     console.log("loadResources");
-    const loadingResources = [];
-    const self = this;
-    Object.entries(this.resources).forEach(([_, resources]) => {
-      if (!resources.length) {
-        return;
-      }
+    console.log("this.resources", this.resources);
+    if (!this.resources.length) {
+      return;
+    }
 
-      loadingResources.push(
-        ...resources.map(async (resource) => {
-          return self.loadResource(resource);
-        })
-      );
+    const self = this;
+    const loadingResources = this.resources.map((resource) => {
+      return self.loadResource(resource);
     });
 
     if (!loadingResources.length) {
@@ -195,6 +199,8 @@ export class Contents {
   }
 
   async loadResource(resource) {
+    console.log("loadResource");
+    console.log("resource", resource);
     return resource.load();
   }
 }

@@ -6,11 +6,23 @@ import { Reference } from "./reference";
 export class Resource extends Reference {
   constructor(id, type, source) {
     super(id, type, source);
+    this.mimetype = undefined;
   }
 
   async load() {
-    this.mimetype = mimetype;
-    this.data = data;
+    console.log("load");
+    try {
+      const response = await fetch(this.source, {
+        method: "GET",
+      });
+      this.mimetype = response.headers.get("Content-Type");
+      console.log("this.mimetype", this.mimetype);
+
+      this.data = await response.blob();
+      console.log("response", response);
+    } catch (error) {
+      console.log("error", error);
+    }
   }
 
   static create(name, type, source) {

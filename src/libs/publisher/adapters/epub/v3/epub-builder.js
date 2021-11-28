@@ -5,9 +5,9 @@ import { EPUB_CSS, MIMETYPE, CONTAINER } from "./templates/constants";
 export class EpubBuilder {
   constructor(publication) {
     this.files = [
-      new File("mimetype", MIMETYPE),
       this.buildEpubDir(publication),
       this.buildMetaInfDir(publication),
+      new File("mimetype", MIMETYPE),
     ];
   }
 
@@ -16,6 +16,8 @@ export class EpubBuilder {
 
     const cssDir = new Directory("css");
     cssDir.addFile(new File("epub.css", EPUB_CSS));
+
+    const imagesDir = new Directory("images");
 
     const contentsDir = new Directory("contents");
 
@@ -37,6 +39,17 @@ export class EpubBuilder {
       navItems.push(
         `<li><a href="${chapter.id}.xhtml">${chapter.title}</a></li>`
       );
+
+      const imageResources = chapter.contents.resources.filter(
+        (resource) => resource.type === "image"
+      );
+
+      imageResources.forEach((imageResource) => {
+        packageOpfManifestItems.push(
+          `<item id="${imageResource.id}" href="images/${imageResource.id}" media-type="${imageResource.mimetype}"/>`
+        );
+        imagesDir.addFile(new File(imageResource.id, imageResource.data));
+      });
     });
 
     const nav = `<?xml version="1.0" encoding="UTF-8"?>
@@ -56,7 +69,7 @@ export class EpubBuilder {
     `;
     contentsDir.addFile(new File("nav.xhtml", nav));
 
-    epubDir.addFiles([contentsDir, cssDir]);
+    epubDir.addFiles([contentsDir, cssDir, imagesDir]);
 
     const title = "unknown";
     const creator = "wilson";
