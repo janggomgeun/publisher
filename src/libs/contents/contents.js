@@ -16,24 +16,25 @@ export class Contents {
     this.references = [];
     this.loading = undefined;
 
-    const cleanHtml = this.cleanRawHtml(html);
+    const cleanHtml = this.cleanHtml(html);
     console.log("cleanHtml", cleanHtml);
 
     this.extractDocumentFromRawHtml(cleanHtml);
     this.clearStyleFromDocument();
+    this.clearInputFromDocument();
     this.clearScriptFromDocument();
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
 
     console.log("hmm");
-    this.document = this.$document.html();
+    this.document = this.cleanHtml(this.$document.html());
     console.log("this.document", this.document);
 
     this.loading = this.loadResources();
   }
 
-  cleanRawHtml(rawHtml) {
-    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+  cleanHtml(html) {
+    return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
   }
 
   extractDocumentFromRawHtml(rawHtml) {
@@ -56,6 +57,13 @@ export class Contents {
     this.$document("*").each(function (i, el) {
       self.$document(el).removeAttr("class");
       self.$document(el).removeAttr("style");
+    });
+  }
+
+  clearInputFromDocument() {
+    const self = this;
+    this.$document("input").each(function (i, el) {
+      self.$document(this).remove();
     });
   }
 
