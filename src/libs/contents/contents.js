@@ -16,10 +16,14 @@ export class Contents {
     this.references = [];
     this.loading = undefined;
 
+    console.log("html", html);
+
     const cleanHtml = this.cleanHtml(html);
     console.log("cleanHtml", cleanHtml);
+    const formattedHtml = this.formatHtml(cleanHtml);
+    console.log("formattedHtml", formattedHtml);
 
-    this.extractDocumentFromRawHtml(cleanHtml);
+    this.extractDocumentFromRawHtml(formattedHtml);
     this.clearStyleFromDocument();
     this.clearInputFromDocument();
     this.clearScriptFromDocument();
@@ -27,14 +31,21 @@ export class Contents {
     this.extractReferencesFromDocument();
 
     console.log("hmm");
-    this.document = this.cleanHtml(this.$document.html());
+    this.document = this.$document.html();
     console.log("this.document", this.document);
 
     this.loading = this.loadResources();
   }
 
   cleanHtml(html) {
-    return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+    return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } }).replace(
+      /&nbsp;/gi,
+      ""
+    );
+  }
+
+  formatHtml(html) {
+    return html;
   }
 
   extractDocumentFromRawHtml(rawHtml) {
