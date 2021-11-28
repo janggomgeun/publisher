@@ -42,7 +42,7 @@ export class EpubBuilder {
     const nav = `<?xml version="1.0" encoding="UTF-8"?>
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
         <head>
-          <title></title>
+          <title>${publication.title}</title>
         </head>
         <body>
             <nav epub:type="toc">
@@ -61,17 +61,18 @@ export class EpubBuilder {
     const title = "unknown";
     const creator = "wilson";
     const language = "en-US";
-    const modifiedAt = new Date().toISOString();
+    const modifiedAt = new Date().toUTCString();
     const packageOpf =
       '<?xml version="1.0" encoding="UTF-8"?>' +
       '<package version="3.0" unique-identifier="uid" xmlns="http://www.idpf.org/2007/opf">' +
       '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
-      '<dc:identifier id="pub-id">urn:uuid:fe93046f-af57-475a-a0cb-a0d4bc99ba6d</dc:identifier>' +
+      '<dc:identifier id="uid">urn:uuid:fe93046f-af57-475a-a0cb-a0d4bc99ba6d</dc:identifier>' +
       `<dc:title id="title">${publication.title}</dc:title>` +
       "<dc:language>en</dc:language>" +
       `<meta property="dcterms:modified">${modifiedAt}</meta>` +
       "</metadata>" +
       "<manifest>" +
+      '<item id="css" href="css/epub.css" media-type="text/css"/>' +
       '<item id="nav" href="contents/nav.xhtml" media-type="application/xhtml+xml" properties="nav" />' +
       packageOpfManifestItems.join("") +
       "</manifest>" +
@@ -94,7 +95,7 @@ export class EpubBuilder {
               <title>${chapter.contents.title}</title>
           </head>
           <body>
-            <h1>hi</h1>
+            ${chapter.contents.document}
           </body>
       </html>
       `;

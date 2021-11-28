@@ -5,7 +5,8 @@ import { Reference } from "./reference";
 import { Resource } from "./resource";
 
 export class Contents {
-  constructor(html) {
+  constructor(html, meta) {
+    this.origin = meta.origin;
     this.$ = undefined;
     this.$document = undefined;
     this.title = undefined;
@@ -16,6 +17,7 @@ export class Contents {
 
     this.extractDocumentFromRawHtml(html);
     this.clearStyleFromDocument();
+    this.clearScriptFromDocument();
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
 
@@ -42,10 +44,14 @@ export class Contents {
 
   clearStyleFromDocument() {
     console.log("clearStyleFromDocument");
+    this.$document("script").remove();
+  }
+
+  clearScriptFromDocument() {
+    console.log("clearScriptFromDocument");
     const self = this;
-    this.$document("*").each(function (i, el) {
-      self.$document(el).removeAttr("class");
-      self.$document(el).removeAttr("style");
+    this.$document("script").each(function (i, el) {
+      console.log("el", el);
     });
   }
 
@@ -82,6 +88,17 @@ export class Contents {
       self.$document(tag).each((i, el) => {
         const source = self.$document(el).attr("href");
         console.log("source", source);
+        console.log("this.origin", this.origin);
+
+        const modifiedSource = source
+          ? this.isAbsoluteUrl(source)
+            ? source
+            : this.isRelativeUrl(source)
+            ? `${this.origin}${source}`
+            : source
+          : undefined;
+
+        console.log("modifiedSource", modifiedSource);
 
         const sourceText = self.$document(el).text();
         console.log("sourceText", sourceText);
@@ -99,7 +116,7 @@ export class Contents {
         const reference = Reference.create(
           name ? name : new Date().getTime(),
           type,
-          source
+          modifiedSource
         );
 
         console.log("reference", reference);
@@ -107,6 +124,19 @@ export class Contents {
         self.references.push(reference);
       });
     });
+  }
+
+  isAbsoluteUrl(string) {
+    try {
+      new URL(string);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  isRelativeUrl(string) {
+    return string.startsWith("/");
   }
 
   async loadResources() {

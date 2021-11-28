@@ -19,7 +19,10 @@ export class Page {
   async loadContents() {
     console.log("loadContents");
     await this.loadRawHtmlFromFullUrl();
-    this.contents = new Contents(this.rawHtml);
+    const url = new URL(this.fullUrl);
+    this.contents = new Contents(this.rawHtml, {
+      origin: url.origin,
+    });
     console.log("this.contents", this.contents);
 
     return;
