@@ -49,7 +49,7 @@ class Popup {
     console.log(activeCurrentTab);
     try {
       const response = await this.chromeRuntime.sendMessage({
-        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_PAGE}`,
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLIP_PAGE}`,
         payload: {
           url: activeCurrentTab.url,
         },
@@ -75,7 +75,7 @@ class Popup {
     console.log(activeCurrentTab);
     try {
       const response = await this.chromeRuntime.sendMessage({
-        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`,
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.PUBLISH}`,
         payload: {
           url: activeCurrentTab.url,
         },
@@ -102,7 +102,7 @@ class Popup {
     console.log(activeCurrentTab);
     try {
       const response = await this.chromeRuntime.sendMessage({
-        type: `${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`,
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.DOWNLOAD}`,
         payload: {
           url: activeCurrentTab.url,
         },

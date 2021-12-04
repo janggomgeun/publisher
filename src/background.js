@@ -7,7 +7,7 @@ import { Sites } from "./libs/sitemap";
 import { Chapter } from "./libs/publisher/chapter";
 
 export const BACKGROUND_API = {
-  namespace: "background",
+  context: "background",
   apis: {
     CLIP_PAGE: "clipPage",
     REMOVE_PAGE: "removePage",
@@ -25,11 +25,11 @@ export const BACKGROUND_API = {
 };
 
 export const BACKGROUND_API_COMMAND_MAP = {
-  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.CLIP_PAGE}`]:
+  [`${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLIP_PAGE}`]:
     BACKGROUND_API.apis.CLIP_PAGE,
-  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.PUBLISH}`]:
+  [`${BACKGROUND_API.context}.${BACKGROUND_API.apis.PUBLISH}`]:
     BACKGROUND_API.apis.PUBLISH,
-  [`${BACKGROUND_API.namespace}.${BACKGROUND_API.apis.DOWNLOAD}`]:
+  [`${BACKGROUND_API.context}.${BACKGROUND_API.apis.DOWNLOAD}`]:
     BACKGROUND_API.apis.DOWNLOAD,
 };
 
