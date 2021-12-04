@@ -33,9 +33,21 @@ export class Contents {
     this.title = this.$("title").text();
 
     // TODO 나중에는 domain별로 추출 요소 우선순위가 달라질 수 있다.
-    const tagsInPriority = ["body", "main", "article"];
+    const contentsTagsInPriority = ["body", "main", "article"];
+
+    let contentsTag = undefined;
+    for (const tag of contentsTagsInPriority) {
+      if (this.$(tag).length) {
+        contentsTag = this.$(tag);
+      }
+    }
+
+    if (contentsTag === undefined) {
+      throw new Error("No contents tag");
+    }
+
     this.$document = cheerio.load(
-      this.$(tagsInPriority[0]).html(),
+      contentsTag.html(),
       {
         xmlMode: true,
       },

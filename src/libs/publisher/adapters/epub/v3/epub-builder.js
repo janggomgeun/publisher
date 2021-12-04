@@ -5,9 +5,9 @@ import { EPUB_CSS, MIMETYPE, CONTAINER } from "./templates/constants";
 export class EpubBuilder {
   constructor(publication) {
     this.files = [
+      new File("mimetype", MIMETYPE),
       this.buildEpubDir(publication),
       this.buildMetaInfDir(publication),
-      new File("mimetype", MIMETYPE),
     ];
   }
 
