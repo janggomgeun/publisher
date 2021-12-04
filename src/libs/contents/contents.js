@@ -1,7 +1,6 @@
 "use strict";
 
 import * as cheerio from "cheerio";
-import DOMPurify from "dompurify";
 import { Reference } from "./reference";
 import { Resource } from "./resource";
 
@@ -16,36 +15,16 @@ export class Contents {
     this.references = [];
     this.loading = undefined;
 
-    console.log("html", html);
-
-    const cleanHtml = this.cleanHtml(html);
-    console.log("cleanHtml", cleanHtml);
-    const formattedHtml = this.formatHtml(cleanHtml);
-    console.log("formattedHtml", formattedHtml);
-
-    this.extractDocumentFromRawHtml(formattedHtml);
+    this.extractDocumentFromRawHtml(html);
     this.clearStyleFromDocument();
     this.clearInputFromDocument();
     this.clearScriptFromDocument();
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
 
-    console.log("hmm");
     this.document = this.$document.html();
-    console.log("this.document", this.document);
 
     this.loading = this.loadResources();
-  }
-
-  cleanHtml(html) {
-    return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } }).replace(
-      /&nbsp;/gi,
-      ""
-    );
-  }
-
-  formatHtml(html) {
-    return html.replace(/(<img("[^"]*"|[^\/">])*)>/gi, "$1/>");
   }
 
   extractDocumentFromRawHtml(rawHtml) {
@@ -57,7 +36,9 @@ export class Contents {
     const tagsInPriority = ["body", "main", "article"];
     this.$document = cheerio.load(
       this.$(tagsInPriority[0]).html(),
-      null,
+      {
+        xmlMode: true,
+      },
       false
     );
   }
