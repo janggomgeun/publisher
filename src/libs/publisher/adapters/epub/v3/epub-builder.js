@@ -90,6 +90,7 @@ export class EpubBuilder {
       packageOpfManifestItems.join("") +
       "</manifest>" +
       "<spine>" +
+      '<itemref idref="nav"/>' +
       packageOpfSpineItems.join("") +
       "</spine>" +
       "</package>";
