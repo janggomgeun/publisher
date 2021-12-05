@@ -1,36 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Binder</title>
     <link rel="stylesheet" href="popup.css" />
-</head>
-<body>
-  <div id="app">
-    <div>
-      <div>
-        <div>current site</div>
-        <ol>
-          <li><span><input type="radio" name="" id=""> page</span></li>
-        </ol>
+    <link rel="stylesheet" href="../src/popup.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="main-layout">
+        <div>
+          <div id="currentSite">
+            <h1>Current site</h1>
+            <h2>http://www.google.com</h2>
+            <ol id="currentSitepages">
+              <li>
+                <span><input type="checkbox" name="" /> page</span>
+              </li>
+              <li>
+                <span><input type="checkbox" name="" /> page</span>
+              </li>
+            </ol>
+          </div>
+          <div id="otherSites">
+            <h1>Other sites</h1>
+            <ol>
+              <h2>http://www.naver.com</h2>
+              <ol id="otherSitePages">
+                <li>
+                  <span><input type="checkbox" name="" /> page</span>
+                </li>
+              </ol>
+            </ol>
+          </div>
+        </div>
+        <div>
+          <button id="clipPageBtn">Clip</button>
+        </div>
+        <div>
+          <button id="downloadEpubBtn">Download EPUB</button>
+        </div>
+        <div hidden>
+          <button>EPUB</button>
+        </div>
+        <div hidden>
+          <button id="bindBtn">Bind</button>
+        </div>
+        <div hidden>
+          <button id="downloadBtn">Download</button>
+        </div>
+        <div>
+          <div>Publisher</div>
+          <div>Buy me a coffee</div>
+        </div>
       </div>
-      <div>
-        <div>other sites</div>
-        <ol>
-          <li></li>
-        </ol>
-      </div>
     </div>
-    <div>
-      <button id="clipPageBtn">Clip</button>
-    </div>
-    <div>
-      <button id="bindBtn">Bind</button>
-    </div>
-    <div>
-      <button id="downloadBtn">Download</button>
-    </div>
-  </div>
-  <script src="popup.js"></script>
-</body>
+    <script src="popup.js"></script>
+  </body>
 </html>
