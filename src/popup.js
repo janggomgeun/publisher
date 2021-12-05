@@ -2,8 +2,10 @@
 
 import { ChromeTabs } from "./libs/chrome-api/chrome-tabs";
 import { ChromeRuntime } from "./libs/chrome-api/chrome-runtime";
-import "./popup.css";
 import { BACKGROUND_API } from "./background";
+
+import "./reset.css";
+import "./popup.css";
 
 class Popup {
   async init() {
