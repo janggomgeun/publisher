@@ -51,9 +51,14 @@ class Background {
           console.log("this.sites.urlPageMap", this.sites.urlPageMap);
           sendResponse({
             sites: {
-              hostSitemap: this.sites.hostSitemap,
-              urlPageMap: this.sites.urlPageMap,
+              hostSitemap: this.sites.hostSitemap
+                ? Object.fromEntries(this.sites.hostSitemap)
+                : undefined,
+              urlPageMap: this.sites.urlPageMap
+                ? Object.fromEntries(this.sites.urlPageMap)
+                : undefined,
             },
+            state: this.state,
           });
           break;
         }
@@ -112,7 +117,14 @@ class Background {
       this.emitEvent({
         type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`,
         payload: {
-          url: payload.url,
+          sites: {
+            hostSitemap: this.sites.hostSitemap
+              ? Object.fromEntries(this.sites.hostSitemap)
+              : undefined,
+            urlPageMap: this.sites.urlPageMap
+              ? Object.fromEntries(this.sites.urlPageMap)
+              : undefined,
+          },
         },
       });
     } catch (error) {
@@ -130,11 +142,15 @@ class Background {
   async publish() {
     try {
       console.log("publish");
-      const title = Object.keys(this.sites.hostSitemap).reduce(
-        (prev, curr, currIdx, originalArray) =>
-          prev + curr + (originalArray.length - 1 !== currIdx) ? ", " : "",
-        "N/A"
-      );
+      const title = Object.keys(
+        Object.fromEntries(this.sites.hostSitemap)
+      ).reduce((prev, curr, currIdx, originalArray) => {
+        if (currIdx === 0 && curr) {
+          return curr;
+        }
+
+        return prev + curr + (originalArray.length - 1 !== currIdx ? ", " : "");
+      }, "N/A");
 
       console.log("title", title);
 

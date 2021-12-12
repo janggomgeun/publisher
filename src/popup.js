@@ -9,9 +9,12 @@ import "./popup.css";
 
 class Popup {
   async init() {
+    const self = this;
     this.runtime = new ChromeRuntime();
     this.chromeTabs = new ChromeTabs();
     this.appDOM = document.getElementById("app");
+    this.sitesDOM = document.getElementById("sites");
+    this.sitePagesDOM = document.getElementById("pages");
     this.clipPageButton = document.getElementById("clipPageBtn");
     this.publishButton = document.getElementById("publishBtn");
     this.downloadButton = document.getElementById("downloadBtn");
@@ -22,7 +25,8 @@ class Popup {
 
     console.log("response", response);
 
-    this.sites = response.sites;
+    this.updateSites(response.sites);
+    this.updateButtons(response.state);
 
     this.bind();
 
@@ -30,8 +34,9 @@ class Popup {
       switch (type) {
         case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`: {
           console.log("onPageClipped");
-          const url = payload.url;
-          console.log("url", url);
+
+          self.updateSites(payload.sites);
+          console.log("sites", sites);
           break;
         }
         case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIP_FAILED}`: {
@@ -56,6 +61,97 @@ class Popup {
         }
       }
     });
+  }
+
+  updateSites(sites) {
+    this.removeAllChildNodes(this.sitesDOM);
+
+    const self = this;
+    const urlPageMap = sites.urlPageMap;
+
+    let siteEls = {};
+    Object.entries(urlPageMap).forEach(([urlString, page]) => {
+      const url = new URL(urlString);
+      const host = url.host;
+      console.log("host", host);
+      const title = page.contents.title;
+      console.log("title", title);
+
+      if (!(host in siteEls)) {
+        siteEls[host] = self.createSiteElement({ host });
+      }
+
+      const pageEl = self.createPageElement(page);
+      siteEls[host].appendChild(pageEl);
+    });
+
+    Object.values(siteEls).forEach((siteEl) => {
+      this.sitesDOM.appendChild(siteEl);
+    });
+  }
+
+  updateButtons(state) {
+    console.log("state", state);
+  }
+
+  createSiteElement(site) {
+    const li = document.createElement("li");
+
+    const spacerDiv = document.createElement("div");
+    spacerDiv.setAttribute("class", "spacer-4");
+    spacerDiv.textContent = " ";
+    li.appendChild(spacerDiv);
+
+    const h2 = document.createElement("h2");
+    h2.textContent = site.host ? site.host : "";
+    li.appendChild(h2);
+
+    const h3 = document.createElement("h3");
+    h3.textContent = "";
+    li.appendChild(h3);
+
+    li.appendChild(spacerDiv.cloneNode());
+
+    return li;
+  }
+
+  createPageElement(page) {
+    const li = document.createElement("li");
+
+    const flexRow = document.createElement("div");
+    flexRow.setAttribute("class", "flex row");
+    li.appendChild(flexRow);
+
+    const checkboxContainer = document.createElement("div");
+    flexRow.appendChild(checkboxContainer);
+
+    const checkbox = document.createElement("input");
+    checkbox.setAttribute("type", "checkbox");
+    checkbox.setAttribute("checked", true);
+    checkboxContainer.appendChild(checkbox);
+
+    const spacing = document.createElement("div");
+    spacing.textContent = " ";
+    flexRow.appendChild(spacing);
+
+    const labelContainer = document.createElement("div");
+    flexRow.appendChild(labelContainer);
+
+    const labelTitle = document.createElement("div");
+    labelTitle.textContent = page.contents.title;
+    labelContainer.appendChild(labelTitle);
+
+    const labelLink = document.createElement("div");
+    labelLink.textContent = "";
+    labelContainer.appendChild(labelLink);
+
+    return li;
+  }
+
+  removeAllChildNodes(parent) {
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+    }
   }
 
   bind() {
