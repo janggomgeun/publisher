@@ -9,29 +9,28 @@ import { Chapter } from "./libs/publisher/chapter";
 export const BACKGROUND_API = {
   context: "background",
   apis: {
+    GET_SITES: "getSites",
     CLIP_PAGE: "clipPage",
     REMOVE_PAGE: "removePage",
     PUBLISH: "publish",
     DOWNLOAD: "download",
     SELECT_CLIP: "selectClip",
-    SELECT_ALL_CLIPS: "selectAllClips",
     UNSELECT_CLIP: "unselectClip",
-    UNSELECT_ALL_CLIPS: "unselectAllClips",
   },
   events: {
     ON_PAGE_CLIPPED: "onPageClipped",
+    ON_PAGE_CLIP_FAILED: "onPageClipFailed",
     ON_PUBLISHED: "onPublished",
+    ON_PUBLISH_FAILED: "onPublishFailed",
+    ON_DOWNLOADED: "onDownloaded",
+    ON_DOWNLOAD_FAILED: "onDownloadFailed",
   },
 };
 
-export const BACKGROUND_API_COMMAND_MAP = {
-  [`${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLIP_PAGE}`]:
-    BACKGROUND_API.apis.CLIP_PAGE,
-  [`${BACKGROUND_API.context}.${BACKGROUND_API.apis.PUBLISH}`]:
-    BACKGROUND_API.apis.PUBLISH,
-  [`${BACKGROUND_API.context}.${BACKGROUND_API.apis.DOWNLOAD}`]:
-    BACKGROUND_API.apis.DOWNLOAD,
-};
+export const STATE_DEFAULT = "default";
+export const STATE_PUBLISHING = "publishing";
+export const STATE_PUBLISHED = "published";
+export const STATE_DOWNLOADING = "downloading";
 
 class Background {
   constructor(storage) {
@@ -39,101 +38,169 @@ class Background {
     this.runtime = new ChromeRuntime();
     this.downloads = new ChromeDownloads();
     this.publisher = new Publisher(new EpubAdapter());
+    this.publishing = undefined;
     this.publication = undefined;
+    this.state = STATE_DEFAULT;
   }
 
   async init() {
+    const self = this;
     this.runtime.addListener(async (type, payload, sender, sendResponse) => {
-      if (!(type in BACKGROUND_API_COMMAND_MAP)) {
-        throw new Error("The command does not exist");
-      }
+      switch (type) {
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.apis.GET_SITES}`: {
+          console.log("this.sites.urlPageMap", this.sites.urlPageMap);
+          sendResponse({
+            sites: {
+              hostSitemap: this.sites.hostSitemap,
+              urlPageMap: this.sites.urlPageMap,
+            },
+          });
+          break;
+        }
 
-      try {
-        await this[BACKGROUND_API_COMMAND_MAP[type]](payload);
-        sendResponse({});
-      } catch (error) {
-        sendResponse({
-          error,
-        });
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLIP_PAGE}`: {
+          await self.clipPage(payload);
+          sendResponse({
+            message: "ok",
+          });
+          break;
+        }
+
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.apis.PUBLISH}`: {
+          self.setState(STATE_PUBLISHING);
+          self.publishing = this.publish().finally((_) =>
+            self.setState(STATE_PUBLISHED)
+          );
+          sendResponse({
+            message: "ok",
+          });
+          break;
+        }
+
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.apis.DOWNLOAD}`: {
+          try {
+            if (self.publishing) {
+              await self.publishing;
+            }
+
+            self.setState(STATE_DOWNLOADING);
+            await self.download();
+            self.setState(STATE_PUBLISHED);
+            sendResponse({
+              message: "ok",
+            });
+          } catch (error) {
+            sendResponse({ error });
+          } finally {
+            self.setState(STATE_PUBLISHED);
+          }
+          break;
+        }
       }
     });
-
-    // TODO background is initialized
-    // await this.runtime.sendMessage({
-    //   payload: {
-    //     sites: {
-    //       ...this.sites,
-    //     },
-    //   },
-    // });
   }
 
   async clipPage(payload) {
-    console.log("clipPage");
-    if (!("url" in payload)) {
-      throw new Error("No URL is given");
+    try {
+      console.log("clipPage");
+      if (!("url" in payload)) {
+        throw new Error("No URL is given");
+      }
+
+      await this.sites.addPage(payload.url);
+
+      this.emitEvent({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`,
+        payload: {
+          url: payload.url,
+        },
+      });
+    } catch (error) {
+      console.log("error", error);
+
+      this.emitEvent({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIP_FAILED}`,
+        payload: {
+          url: payload.url,
+        },
+      });
     }
-
-    await this.sites.addPage(payload.url);
-
-    // this.runtime.sendMessage({
-    //   type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`,
-    //   payload: {
-    //     sites: {
-    //       ...this.sites,
-    //     },
-    //   },
-    // });
   }
 
   async publish() {
-    console.log("publish");
-    const title = Object.keys(this.sites.hostSitemap).reduce(
-      (prev, curr, currIdx, originalArray) =>
-        prev + curr + (originalArray.length - 1 !== currIdx) ? ", " : "",
-      "N/A"
-    );
-    const selectedPages = this.sites.getSelectedPages();
+    try {
+      console.log("publish");
+      const title = Object.keys(this.sites.hostSitemap).reduce(
+        (prev, curr, currIdx, originalArray) =>
+          prev + curr + (originalArray.length - 1 !== currIdx) ? ", " : "",
+        "N/A"
+      );
 
-    if (!selectedPages.length) {
-      throw new Error("There are no selected pages.");
+      console.log("title", title);
+
+      const selectedPages = this.sites.getSelectedPages();
+
+      console.log("selectedPages", selectedPages);
+
+      if (!selectedPages.length) {
+        throw new Error("There are no selected pages.");
+      }
+
+      await Promise.all(
+        selectedPages.map(async (selectedPage, n) => {
+          await selectedPage.contents.loading;
+          const contents = selectedPage.contents;
+          const chapter = new Chapter(n, contents.title, contents);
+          this.publisher.addChapter(chapter);
+          return;
+        })
+      );
+
+      this.publisher.addTitle(title);
+      this.publisher.addCover("unknown");
+      this.publisher.addAuthor("unknown");
+      this.publisher.addPublisher("unknown");
+      this.publication = await this.publisher.publish();
+      console.log("this.publication", this.publication);
+      this.publisher.throwDraftOut();
+
+      this.emitEvent({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PUBLISHED}`,
+      });
+    } catch (error) {
+      this.emitEvent({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PUBLISH_FAILED}`,
+      });
     }
-
-    for (let n = 0; n < selectedPages.length; ++n) {
-      const page = selectedPages[n];
-      await page.contents.loading;
-      const contents = page.contents;
-      const chapter = new Chapter(n, contents.title, contents);
-      this.publisher.addChapter(chapter);
-    }
-    this.publisher.addTitle(title);
-    this.publisher.addCover("unknown");
-    this.publisher.addAuthor("unknown");
-    this.publisher.addPublisher("unknown");
-    this.publication = await this.publisher.publish();
-    console.log("this.publication", this.publication);
-    this.publisher.throwDraftOut();
-
-    // this.runtime.sendMessage({
-    //   type: `${BACKGROUND_API}.${BACKGROUND_API.events.ON_PUBLISHED}`,
-    //   payload: {
-    //     sites: {
-    //       ...this.sites,
-    //     },
-    //   },
-    // });
   }
 
   async download() {
-    if (this.publication === undefined) {
-      throw new Error("It is not published yet.");
-    }
+    try {
+      if (this.publication === undefined) {
+        throw new Error("It is not published yet.");
+      }
 
-    var url = URL.createObjectURL(this.publication);
-    await this.downloads.download({
-      url,
-      saveAs: true,
-    });
+      var url = URL.createObjectURL(this.publication);
+      await this.downloads.download({
+        url,
+        saveAs: true,
+      });
+      this.emitEvent({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_DOWNLOADED}`,
+      });
+    } catch (error) {
+      this.emitEvent({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_DOWNLOAD_FAILED}`,
+      });
+    }
+  }
+
+  setState(state) {
+    this.state = state;
+  }
+
+  emitEvent(event) {
+    this.runtime.sendMessage(event);
   }
 }
 

@@ -9,33 +9,71 @@ import "./popup.css";
 
 class Popup {
   async init() {
-    this.chromeRuntime = new ChromeRuntime();
+    this.runtime = new ChromeRuntime();
     this.chromeTabs = new ChromeTabs();
     this.appDOM = document.getElementById("app");
-    this.clipPageButtonDOM = document.getElementById("clipPageBtn");
-    this.bindButtonDOM = document.getElementById("bindBtn");
-    this.downloadButtonDOM = document.getElementById("downloadBtn");
-    this.currentBinderDOM = document.getElementById("current-binder");
-    this.bindersDOM = document.getElementById("binders");
+    this.clipPageButton = document.getElementById("clipPageBtn");
+    this.publishButton = document.getElementById("publishBtn");
+    this.downloadButton = document.getElementById("downloadBtn");
+
+    const response = await this.runtime.sendMessage({
+      type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.GET_SITES}`,
+    });
+
+    console.log("response", response);
+
+    this.sites = response.sites;
+
     this.bind();
+
+    this.runtime.addListener(async (type, payload, sender, sendResponse) => {
+      switch (type) {
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIPPED}`: {
+          console.log("onPageClipped");
+          const url = payload.url;
+          console.log("url", url);
+          break;
+        }
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PAGE_CLIP_FAILED}`: {
+          console.log("onPageClipFailed");
+          break;
+        }
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PUBLISHED}`: {
+          console.log("onPublished");
+          break;
+        }
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_PUBLISH_FAILED}`: {
+          console.log("onPublishFailed");
+          break;
+        }
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_DOWNLOADED}`: {
+          console.log("onDownloaded");
+          break;
+        }
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.events.ON_DOWNLOAD_FAILED}`: {
+          console.log("onDownloadFailed");
+          break;
+        }
+      }
+    });
   }
 
   bind() {
     const self = this;
-    this.clipPageButtonDOM.addEventListener("click", function (e) {
-      self.onClipContentsButtonClicked();
+    this.clipPageButton.addEventListener("click", async function (e) {
+      await self.onClipPageButtonClicked();
     });
 
-    this.bindButtonDOM.addEventListener("click", function (e) {
-      self.onBindButtonClicked();
+    this.publishButton.addEventListener("click", async function (e) {
+      await self.onPublishButtonClicked();
     });
 
-    this.downloadButtonDOM.addEventListener("click", function (e) {
-      self.onDownloadButtonClicked();
+    this.downloadButton.addEventListener("click", async function (e) {
+      await self.onDownloadButtonClicked();
     });
   }
 
-  async onClipContentsButtonClicked() {
+  async onClipPageButtonClicked() {
     console.log("onClipContentsButtonClicked");
     const tabs = await this.chromeTabs.query({
       active: true,
@@ -50,7 +88,7 @@ class Popup {
     const activeCurrentTab = tabs[0];
     console.log(activeCurrentTab);
     try {
-      const response = await this.chromeRuntime.sendMessage({
+      const response = await this.runtime.sendMessage({
         type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLIP_PAGE}`,
         payload: {
           url: activeCurrentTab.url,
@@ -62,7 +100,7 @@ class Popup {
     }
   }
 
-  async onBindButtonClicked() {
+  async onPublishButtonClicked() {
     const tabs = await this.chromeTabs.query({
       active: true,
       currentWindow: true,
@@ -76,7 +114,7 @@ class Popup {
     const activeCurrentTab = tabs[0];
     console.log(activeCurrentTab);
     try {
-      const response = await this.chromeRuntime.sendMessage({
+      const response = await this.runtime.sendMessage({
         type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.PUBLISH}`,
         payload: {
           url: activeCurrentTab.url,
@@ -103,7 +141,7 @@ class Popup {
     const activeCurrentTab = tabs[0];
     console.log(activeCurrentTab);
     try {
-      const response = await this.chromeRuntime.sendMessage({
+      const response = await this.runtime.sendMessage({
         type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.DOWNLOAD}`,
         payload: {
           url: activeCurrentTab.url,
@@ -115,14 +153,6 @@ class Popup {
     }
     console.log("onBindButtonClicked");
   }
-
-  onClearBinderButtonClicked() {}
-
-  onBinderFocusChanged() {}
-
-  onClearFocusButtonClicked() {}
-
-  onBinderDeleted() {}
 }
 
 (function () {
