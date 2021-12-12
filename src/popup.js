@@ -4,7 +4,6 @@ import { ChromeTabs } from "./libs/chrome-api/chrome-tabs";
 import { ChromeRuntime } from "./libs/chrome-api/chrome-runtime";
 import { BACKGROUND_API } from "./background";
 
-import "./reset.css";
 import "./popup.css";
 
 class Popup {
@@ -15,6 +14,7 @@ class Popup {
     this.appDOM = document.getElementById("app");
     this.sitesDOM = document.getElementById("sites");
     this.sitePagesDOM = document.getElementById("pages");
+    this.clearAllPagesButton = document.getElementById("clearAllPagesBtn");
     this.clipPageButton = document.getElementById("clipPageBtn");
     this.publishButton = document.getElementById("publishBtn");
     this.downloadButton = document.getElementById("downloadBtn");
@@ -72,7 +72,7 @@ class Popup {
     let siteEls = {};
     Object.entries(urlPageMap).forEach(([urlString, page]) => {
       const url = new URL(urlString);
-      const host = url.host;
+      const host = url.hostname;
       console.log("host", host);
       const title = page.contents.title;
       console.log("title", title);
@@ -122,23 +122,23 @@ class Popup {
     flexRow.setAttribute("class", "flex row");
     li.appendChild(flexRow);
 
-    const checkboxContainer = document.createElement("div");
-    flexRow.appendChild(checkboxContainer);
+    // const checkboxContainer = document.createElement("div");
+    // flexRow.appendChild(checkboxContainer);
 
-    const checkbox = document.createElement("input");
-    checkbox.setAttribute("type", "checkbox");
-    checkbox.setAttribute("checked", true);
-    checkboxContainer.appendChild(checkbox);
+    // const checkbox = document.createElement("input");
+    // checkbox.setAttribute("type", "checkbox");
+    // checkbox.setAttribute("checked", true);
+    // checkboxContainer.appendChild(checkbox);
 
-    const spacing = document.createElement("div");
-    spacing.textContent = " ";
-    flexRow.appendChild(spacing);
+    // const spacing = document.createElement("div");
+    // spacing.textContent = " ";
+    // flexRow.appendChild(spacing);
 
     const labelContainer = document.createElement("div");
     flexRow.appendChild(labelContainer);
 
     const labelTitle = document.createElement("div");
-    labelTitle.textContent = page.contents.title;
+    labelTitle.textContent = `- ${page.contents.title}`;
     labelContainer.appendChild(labelTitle);
 
     const labelLink = document.createElement("div");
@@ -156,6 +156,10 @@ class Popup {
 
   bind() {
     const self = this;
+    this.clearAllPagesButton.addEventListener("click", async function (e) {
+      await self.onClearAllPagesButtonClicked();
+    });
+
     this.clipPageButton.addEventListener("click", async function (e) {
       await self.onClipPageButtonClicked();
     });
@@ -167,6 +171,19 @@ class Popup {
     this.downloadButton.addEventListener("click", async function (e) {
       await self.onDownloadButtonClicked();
     });
+  }
+
+  async onClearAllPagesButtonClicked() {
+    console.log("onClearAllPagesButtonClicked");
+    try {
+      const response = await this.runtime.sendMessage({
+        type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLEAR_ALL_PAGES}`,
+      });
+      this.updateSites({});
+      console.log("response", response);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async onClipPageButtonClicked() {

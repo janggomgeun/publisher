@@ -1,8 +1,40 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+button {
+  background: transparent;
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  text-shadow: 0px 0px 0px transparent;
+}
+
+button:hover {
+  background: transparent;
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  text-shadow: 0px 0px 0px transparent;
+}
+
+button:active {
+  outline: none;
+  border: none;
+}
+
+button:focus {
+  outline: 0;
+}
+/* reset css end */
+
 * {
   background-color: transparent;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial,
     sans-serif;
-  color: #e9e3da;
+  color: #f1faee;
 }
 
 * {
@@ -25,12 +57,21 @@ p {
   font-size: 0.9em;
 }
 
+.layout {
+  min-width: 300px;
+  max-width: 300px;
+}
+
 .p-4 {
   padding: 4px;
 }
 
 .p-8 {
   padding: 8px;
+}
+
+.p-16 {
+  padding: 16px;
 }
 
 .border.solid {
@@ -81,9 +122,8 @@ li {
 
 button {
   width: 100%;
-  border: 1px solid black;
   border-radius: 4px;
-  background: #d7ba4f;
+  background: #457b9d;
   text-align: center;
   text-decoration: none;
   font-weight: bold;
@@ -92,9 +132,9 @@ button {
 }
 
 button:hover {
-  color: #303030;
+  color: #1d3557;
   border: 1px solid black;
   border-radius: 4px;
   font-weight: bold;
-  background: #c6bd9d;
+  background: #95d5b2;
 }

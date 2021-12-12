@@ -10,6 +10,7 @@ export const BACKGROUND_API = {
   context: "background",
   apis: {
     GET_SITES: "getSites",
+    CLEAR_ALL_PAGES: "clearAllPages",
     CLIP_PAGE: "clipPage",
     REMOVE_PAGE: "removePage",
     PUBLISH: "publish",
@@ -47,6 +48,14 @@ class Background {
     const self = this;
     this.runtime.addListener(async (type, payload, sender, sendResponse) => {
       switch (type) {
+        case `${BACKGROUND_API.context}.${BACKGROUND_API.apis.CLEAR_ALL_PAGES}`: {
+          this.sites = new Sites();
+          sendResponse({
+            message: "ok",
+          });
+          break;
+        }
+
         case `${BACKGROUND_API.context}.${BACKGROUND_API.apis.GET_SITES}`: {
           console.log("this.sites.urlPageMap", this.sites.urlPageMap);
           sendResponse({

@@ -7,25 +7,29 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <div id="app">
-      <div class="flex col background-color primary p-8">
+    <div id="app" class="layout">
+      <div class="flex col background-color primary p-16">
         <div>
           <div>
-            <h1>Sites</h1>
-            <hr />
             <ol id="sites"></ol>
           </div>
         </div>
         <br />
         <div>
           <div>
+            <button id="clearAllPagesBtn">Clear all pages</button>
+          </div>
+          <div class="spacer-4"></div>
+          <div>
             <button id="clipPageBtn">Clip</button>
           </div>
+          <div class="spacer-4"></div>
           <div>
             <button id="publishBtn">Publish</button>
           </div>
+          <div class="spacer-4"></div>
           <div>
-            <button id="downloadBtn">Download</button>
+            <button id="downloadBtn">Download as EPUB</button>
           </div>
         </div>
       </div>
