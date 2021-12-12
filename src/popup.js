@@ -167,10 +167,6 @@ class Popup {
     this.publishButton.addEventListener("click", async function (e) {
       await self.onPublishButtonClicked();
     });
-
-    this.downloadButton.addEventListener("click", async function (e) {
-      await self.onDownloadButtonClicked();
-    });
   }
 
   async onClearAllPagesButtonClicked() {
@@ -227,34 +223,14 @@ class Popup {
     const activeCurrentTab = tabs[0];
     console.log(activeCurrentTab);
     try {
-      const response = await this.runtime.sendMessage({
+      await this.runtime.sendMessage({
         type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.PUBLISH}`,
         payload: {
           url: activeCurrentTab.url,
         },
       });
-      console.log("response", response);
-    } catch (error) {
-      console.log(error);
-    }
-    console.log("onBindButtonClicked");
-  }
 
-  async onDownloadButtonClicked() {
-    const tabs = await this.chromeTabs.query({
-      active: true,
-      currentWindow: true,
-      highlighted: true,
-    });
-
-    if (!tabs.length) {
-      throw new Error("An active tab on the current window is not found");
-    }
-
-    const activeCurrentTab = tabs[0];
-    console.log(activeCurrentTab);
-    try {
-      const response = await this.runtime.sendMessage({
+      await this.runtime.sendMessage({
         type: `${BACKGROUND_API.context}.${BACKGROUND_API.apis.DOWNLOAD}`,
         payload: {
           url: activeCurrentTab.url,
