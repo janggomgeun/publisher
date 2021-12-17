@@ -5,6 +5,7 @@ import { Reference } from "./reference";
 import { Resource } from "./resource";
 import prettier from "prettier/standalone";
 import prettierHtmlParser from "prettier/parser-html";
+import { v4 as uuidv4 } from "uuid";
 
 export class Contents {
   constructor(html, meta) {
@@ -123,7 +124,7 @@ export class Contents {
           ? sourceTitle
           : splitSource[splitSource.length - 1];
         const type = tag === "img" ? "image" : tag;
-        const resource = Resource.create(name, type, modifiedSource);
+        const resource = Resource.create(uuidv4(), type, modifiedSource);
         self.resources.push(resource);
         self.$document(el).attr("src", `../${type}s/${resource.id}`);
       });
