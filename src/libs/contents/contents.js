@@ -30,7 +30,7 @@ export class Contents {
   extractDocumentFromRawHtml(rawHtml) {
     console.log("extractDocumentFromRawHtml");
     this.$ = cheerio.load(rawHtml);
-    this.title = this.$("title").text();
+    this.title = this.$("head title").text();
 
     // TODO 나중에는 domain별로 추출 요소 우선순위가 달라질 수 있다.
     const contentsTagsInPriority = ["body", "main", "article"];
