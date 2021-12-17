@@ -21,6 +21,7 @@ export class Contents {
     this.clearStyleFromDocument();
     this.clearInputFromDocument();
     this.clearScriptFromDocument();
+    this.clearOtherIvalidElementsFromDocument();
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
 
@@ -82,6 +83,15 @@ export class Contents {
     console.log("clearScriptFromDocument");
     const self = this;
     this.$document("script").each(function (i, el) {
+      console.log("self.$document(this).html()", self.$document(this).html());
+      self.$document(this).remove();
+    });
+  }
+
+  clearOtherIvalidElementsFromDocument() {
+    console.log("clearOtherIvalidElementsFromDocument");
+    const self = this;
+    this.$document("link").each(function (i, el) {
       console.log("self.$document(this).html()", self.$document(this).html());
       self.$document(this).remove();
     });
