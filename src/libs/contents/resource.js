@@ -26,7 +26,7 @@ export class Resource extends Reference {
   }
 
   static create(name, type, source) {
-    const id = `res_${this.type}_${name}`;
+    const id = `res_${type}_${name}`;
     return new Resource(id, type, source);
   }
 }
