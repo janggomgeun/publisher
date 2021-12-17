@@ -3,6 +3,8 @@
 import * as cheerio from "cheerio";
 import { Reference } from "./reference";
 import { Resource } from "./resource";
+import prettier from "prettier/standalone";
+import prettierHtmlParser from "prettier/parser-html";
 
 export class Contents {
   constructor(html, meta) {
@@ -22,9 +24,16 @@ export class Contents {
     this.extractResourcesFromDocument();
     this.extractReferencesFromDocument();
 
-    this.document = this.$document.html();
+    this.document = this.format(this.$document.html()).replace(/&nbsp;/g, " ");
 
     this.loading = this.loadResources();
+  }
+
+  format(html) {
+    return prettier.format(html, {
+      parser: "html",
+      plugins: [prettierHtmlParser],
+    });
   }
 
   extractDocumentFromRawHtml(rawHtml) {
@@ -46,13 +55,11 @@ export class Contents {
       throw new Error("No contents tag");
     }
 
-    this.$document = cheerio.load(
-      contentsTag.html(),
-      {
-        xmlMode: true,
-      },
-      false
-    );
+    const formattedHtml = this.format(contentsTag.html());
+
+    console.log("formattedHtml", formattedHtml);
+
+    this.$document = cheerio.load(formattedHtml, false);
   }
 
   clearStyleFromDocument() {
